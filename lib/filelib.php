@@ -1980,23 +1980,26 @@ function readfile_accel($file, $mimetype, $accelerate) {
     $lastmodified = is_object($file) ? $file->get_timemodified() : filemtime($file);
     header('Last-Modified: '. gmdate('D, d M Y H:i:s', $lastmodified) .' GMT');
 
-    if (is_object($file)) {
-        header('Etag: "' . $file->get_contenthash() . '"');
-        if (isset($_SERVER['HTTP_IF_NONE_MATCH']) and trim($_SERVER['HTTP_IF_NONE_MATCH'], '"') === $file->get_contenthash()) {
-            header('HTTP/1.1 304 Not Modified');
-            return;
+    if ($CFG->xsendfile !== true) {
+        if (is_object($file)) {
+            header('Etag: "' . $file->get_contenthash() . '"');
+            if (isset($_SERVER['HTTP_IF_NONE_MATCH']) and trim($_SERVER['HTTP_IF_NONE_MATCH'], '"') === $file->get_contenthash()) {
+                header('HTTP/1.1 304 Not Modified');
+                return;
+            }
+        }
+
+        // if etag present for stored file rely on it exclusively
+        if (!empty($_SERVER['HTTP_IF_MODIFIED_SINCE']) and (empty($_SERVER['HTTP_IF_NONE_MATCH']) or !is_object($file))) {
+            // get unixtime of request header; clip extra junk off first
+            $since = strtotime(preg_replace('/;.*$/', '', $_SERVER["HTTP_IF_MODIFIED_SINCE"]));
+            if ($since && $since >= $lastmodified) {
+                header('HTTP/1.1 304 Not Modified');
+                return;
+            }
         }
     }
 
-    // if etag present for stored file rely on it exclusively
-    if (!empty($_SERVER['HTTP_IF_MODIFIED_SINCE']) and (empty($_SERVER['HTTP_IF_NONE_MATCH']) or !is_object($file))) {
-        // get unixtime of request header; clip extra junk off first
-        $since = strtotime(preg_replace('/;.*$/', '', $_SERVER["HTTP_IF_MODIFIED_SINCE"]));
-        if ($since && $since >= $lastmodified) {
-            header('HTTP/1.1 304 Not Modified');
-            return;
-        }
-    }
 
     if ($accelerate and !empty($CFG->xsendfile)) {
         if (empty($CFG->disablebyteserving) and $mimetype !== 'text/plain') {

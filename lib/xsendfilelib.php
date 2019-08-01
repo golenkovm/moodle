@@ -39,6 +39,10 @@ function xsendfile($filepath) {
         return false;
     }
 
+    if ($CFG->xsendfile === true) {
+        return false;
+    }
+
     if (!file_exists($filepath)) {
         return false;
     }
