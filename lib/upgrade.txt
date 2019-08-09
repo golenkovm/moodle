@@ -82,6 +82,10 @@ filepath because some components, such as mod_page or mod_resource, add the revi
 * If you have a form which sends a file in response to a Moodle form submit button, but you cannot
   call the above function because the file is sent by a third party library, then you should add
   the attribute data-double-submit-protection="off" to your form.
+* AJAX pages can be called without requiring a session lock if they set REQUIRE_SESSION_LOCK to false, eg.
+  define('REQUIRE_SESSION_LOCK', false); Note - this also requires $CFG->enable_read_only_sessions to be set to true.
+* External functions can be called without requiring a session lock if they define 'requiresessionlock' => false in
+  db/services.php. Note - this also requires $CFG->enable_read_only_sessions to be set to true.
 
 === 3.7 ===
 
