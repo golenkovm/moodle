@@ -79,6 +79,17 @@ abstract class grade_base_testcase extends advanced_testcase {
         $this->load_grade_outcomes();
     }
 
+    /**
+     * Reset filter_activitynames static properties.
+     *
+     * {@inheritDoc}
+     */
+    public static function tearDownAfterClass() {
+        filter_activitynames::$activitylist = null;
+        filter_activitynames::$cachedcourseid = null;
+        filter_activitynames::$cacheduserid = null;
+    }
+
     private function load_modules() {
         $this->activities[0] = $this->getDataGenerator()->create_module('assign', array('course'=>$this->course->id));
         $this->course_module[0] = get_coursemodule_from_instance('assign', $this->activities[0]->id);
