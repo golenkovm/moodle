@@ -35,6 +35,17 @@ require_once($CFG->dirroot.'/grade/report/grader/lib.php');
 class core_grade_report_graderlib_testcase extends advanced_testcase {
 
     /**
+     * Reset filter_activitynames static properties.
+     *
+     * {@inheritDoc}
+     */
+    public static function tearDownAfterClass() {
+        filter_activitynames::$activitylist = null;
+        filter_activitynames::$cachedcourseid = null;
+        filter_activitynames::$cacheduserid = null;
+    }
+
+    /**
      * Tests grade_report_grader::process_data()
      *
      * process_data() processes submitted grade and feedback data
