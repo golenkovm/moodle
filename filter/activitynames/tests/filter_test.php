@@ -36,6 +36,17 @@ require_once($CFG->dirroot . '/filter/activitynames/filter.php'); // Include the
  */
 class filter_activitynames_filter_testcase extends advanced_testcase {
 
+    /**
+     * Reset filter_activitynames static properties.
+     *
+     * {@inheritDoc}
+     */
+    public static function tearDownAfterClass() {
+        filter_activitynames::$activitylist = null;
+        filter_activitynames::$cachedcourseid = null;
+        filter_activitynames::$cacheduserid = null;
+    }
+
     public function test_links() {
         global $CFG;
         $this->resetAfterTest(true);
