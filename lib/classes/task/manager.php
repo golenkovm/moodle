@@ -508,6 +508,7 @@ class manager {
         $qos = []; // Our new queue with ensured quality of service.
         $seed = $count % $limittotal; // Which task queue to shuffle from first?
 
+        $move = 1; // How many tasks to shuffle at a time.
         do {
             $shuffled = 0;
 
@@ -529,12 +530,13 @@ class manager {
                     $seed += 1;
                     continue;
                 }
-                $task = array_splice($queues[$type], 0, 1);
-                $qos = array_merge($qos, $task);
+                $tasks = array_splice($queues[$type], 0, $move);
+                $qos = array_merge($qos, $tasks);
 
                 // Stop if we didn't move any tasks onto the main queue.
-                $shuffled += count($task);
+                $shuffled += count($tasks);
             }
+            $move *= 2;
         } while ($shuffled > 0);
 
         return $qos;
@@ -550,17 +552,17 @@ class manager {
      */
     public static function get_next_adhoc_task($timestart) {
         global $DB;
-        $cronlockfactory = \core\lock\lock_config::get_lock_factory('cron');
-
-        if (!$cronlock = $cronlockfactory->get_lock('core_cron', 10)) {
-            throw new \moodle_exception('locktimeout');
-        }
 
         $where = '(nextruntime IS NULL OR nextruntime < :timestart1)';
         $params = array('timestart1' => $timestart);
         $records = $DB->get_records_select('task_adhoc', $where, $params);
 
         $records = self::ensure_adhoc_task_qos($records);
+
+        $cronlockfactory = \core\lock\lock_config::get_lock_factory('cron');
+        if (!$cronlock = $cronlockfactory->get_lock('core_cron', 10)) {
+            throw new \moodle_exception('locktimeout');
+        }
 
         foreach ($records as $record) {
 
