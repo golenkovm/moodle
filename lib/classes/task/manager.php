@@ -546,13 +546,18 @@ class manager {
      * {@link adhoc_task_failed} or {@link adhoc_task_complete} to release the lock and reschedule the task.
      *
      * @param int $timestart
+     * @param \core\lock\lock $adhoclock
      * @return \core\task\adhoc_task or null if not found
      */
-    public static function get_next_adhoc_task($timestart) {
+    public static function get_next_adhoc_task($timestart, $adhoclock = null) {
         global $DB;
         $cronlockfactory = \core\lock\lock_config::get_lock_factory('cron');
 
         if (!$cronlock = $cronlockfactory->get_lock('core_cron', 10)) {
+            if (!empty($adhoclock)) {
+                // Release the adhoc task runner lock before throwing exception.
+                $adhoclock->release();
+            }
             throw new \moodle_exception('locktimeout');
         }
 
