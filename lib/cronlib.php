@@ -110,7 +110,7 @@ function cron_run_scheduled_tasks(int $timenow) {
 
     // Run all scheduled tasks.
     while (!\core\task\manager::static_caches_cleared_since($timenow) &&
-            $task = \core\task\manager::get_next_scheduled_task($timenow)) {
+            $task = \core\task\manager::get_next_scheduled_task($timenow, $scheduledlock)) {
         cron_run_inner_scheduled_task($task);
         unset($task);
 

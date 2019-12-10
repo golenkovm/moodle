@@ -607,13 +607,18 @@ class manager {
      * {@link scheduled_task_failed} or {@link scheduled_task_complete} to release the lock and reschedule the task.
      *
      * @param int $timestart - The start of the cron process - do not repeat any tasks that have been run more recently than this.
+     * @param \core\lock\lock $scheduledlock
      * @return \core\task\scheduled_task or null
      */
-    public static function get_next_scheduled_task($timestart) {
+    public static function get_next_scheduled_task($timestart, $scheduledlock = null) {
         global $DB;
         $cronlockfactory = \core\lock\lock_config::get_lock_factory('cron');
 
         if (!$cronlock = $cronlockfactory->get_lock('core_cron', 10)) {
+            if (!empty($cronlockfactory)) {
+                // Release the scheduled task runner lock before throwing exception.
+                $scheduledlock->release();
+            }
             throw new \moodle_exception('locktimeout');
         }
 
