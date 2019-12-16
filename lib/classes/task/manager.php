@@ -606,7 +606,6 @@ class manager {
                 } else {
                     $task->set_cron_lock($cronlock);
                 }
-
                 return $task;
             }
         }
