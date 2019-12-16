@@ -117,10 +117,9 @@ abstract class adhoc_task extends task_base {
      */
     protected function get_default_concurrency_limit() : int {
         global $CFG;
-        $concurrenyoverridedefault = "task_concurrency_limit_default";
 
-        if (isset($CFG->$concurrenyoverridedefault)) {
-            return (int) $CFG->$concurrenyoverridedefault;
+        if (isset($CFG->task_concurrency_limit_default)) {
+            return (int) $CFG->task_concurrency_limit_default;
         }
         return 0;
     }
@@ -134,10 +133,9 @@ abstract class adhoc_task extends task_base {
         global $CFG;
 
         $classname = get_class($this);
-        $concurrenyoverridename = "task_concurrency_limit_{$classname}";
 
-        if (isset($CFG->$concurrenyoverridename)) {
-            return (int) $CFG->$concurrenyoverridename;
+        if (isset($CFG->task_concurrency_limit[$classname])) {
+            return (int) $CFG->task_concurrency_limit[$classname];
         }
         return $this->get_default_concurrency_limit();
     }
