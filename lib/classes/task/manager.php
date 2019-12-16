@@ -564,7 +564,6 @@ class manager {
             throw new \moodle_exception('locktimeout');
         }
 
-        $concurrencylimit = array();
         $skipclasses = array();
 
         foreach ($records as $record) {
@@ -572,10 +571,6 @@ class manager {
             if (in_array($record->classname, $skipclasses)) {
                 // Skip the task if it can't be started due to per-task concurrency limit.
                 continue;
-            }
-
-            if (!array_key_exists($record->classname, $concurrencylimit)) {
-                $concurrencylimit[$record->classname] = 0;
             }
 
             if ($lock = $cronlockfactory->get_lock('adhoc_' . $record->id, 0)) {
@@ -599,13 +594,7 @@ class manager {
                         $task->set_concurrent_task_lock($concurrentlock);
                     } else {
                         // Unable to obtain a concurrency lock.
-                        $concurrencylimit[$record->classname] += 1;
-
-                        if ($task->get_concurrency_limit() < $concurrencylimit[$record->classname]) {
-                            // We have reached concurrency limit for this task class.
-                            $skipclasses[] = $record->classname;
-                        }
-
+                        $skipclasses[] = $record->classname;
                         $lock->release();
                         continue;
                     }
@@ -620,10 +609,6 @@ class manager {
 
                 return $task;
             }
-        }
-
-        if (count($skipclasses) > 0) {
-            mtrace("Ad-hoc queue is not empty, but has only tasks that have reached their per-task concurrency limit");
         }
 
         // No tasks.
