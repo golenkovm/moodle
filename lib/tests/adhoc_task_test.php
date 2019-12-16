@@ -362,4 +362,43 @@ class core_adhoc_task_testcase extends advanced_testcase {
 
         $this->assertEquals($user->id, $task->get_userid());
     }
+
+    /**
+     * Test get_concurrency_limit() method to return 0 by default.
+     */
+    public function test_get_concurrency_limit() {
+        $task = new \core\task\adhoc_test_task();
+        $concurrencylimit = $task->get_concurrency_limit();
+        $this->assertEquals(0, $concurrencylimit);
+    }
+
+    /**
+     * Test get_concurrency_limit() method to return a default value set in config.
+     */
+    public function test_get_concurrency_limit_default() {
+        global $CFG;
+        $CFG->task_concurrency_limit_default = 10;
+
+        $task = new \core\task\adhoc_test_task();
+        $concurrencylimit = $task->get_concurrency_limit();
+
+        $this->assertEquals(10, $concurrencylimit);
+        unset($CFG->task_concurrency_limit_default);
+    }
+
+    /**
+     * Test get_concurrency_limit() method to return a value for specific task class.
+     */
+    public function test_get_concurrency_limit_for_task() {
+        global $CFG;
+        $CFG->task_concurrency_limit_default = 10;
+        $CFG->task_concurrency_limit = array('core\task\adhoc_test_task' => 5);
+
+        $task = new \core\task\adhoc_test_task();
+        $concurrencylimit = $task->get_concurrency_limit();
+
+        $this->assertEquals(5, $concurrencylimit);
+        unset($CFG->task_concurrency_limit_default);
+        unset($CFG->task_concurrency_limit);
+    }
 }
