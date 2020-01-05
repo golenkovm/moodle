@@ -46,9 +46,10 @@ class core_customfield_privacy_testcase extends provider_testcase {
     private $cffields = [];
 
     /**
-     * This method is called after the last test of this test class is run.
+     * Test tearDown.
      */
-    public static function tearDownAfterClass() {
+    public function tearDown() {
+        parent::tearDown();
         $handler = core_course\customfield\course_handler::create();
         $handler->delete_all();
     }
