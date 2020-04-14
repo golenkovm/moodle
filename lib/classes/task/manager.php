@@ -727,6 +727,8 @@ class manager {
         $task->set_next_run_time(time() + $delay);
         $task->set_fail_delay($delay);
         $record = self::record_from_adhoc_task($task);
+        $record->startedwhen = null;
+        $record->startedwhere = null;
         $DB->update_record('task_adhoc', $record);
 
         $task->release_concurrency_lock();
@@ -737,6 +739,33 @@ class manager {
 
         // Finalise the log output.
         logmanager::finalise_log(true);
+    }
+
+    /**
+     * Records that a scheduled task is starting to run.
+     *
+     * @param adhoc_task $task Task that is starting
+     * @param int $time Start time (leave blank for now)
+     * @throws \dml_exception
+     * @throws \coding_exception
+     */
+    public static function adhoc_task_starting(adhoc_task $task, int $time = 0) {
+        global $DB;
+
+        if (!$time) {
+            $time = time();
+        }
+        $id = $task->get_id();
+        if (!$id) {
+            throw new \coding_exception('Cannot start adhoc task without an id');
+        }
+
+        $info = self::get_process_info();
+
+        $record = $DB->get_record('task_adhoc', ['id' => $id], '*', MUST_EXIST);
+        $record->startedwhen = $time;
+        $record->startedwhere = $info;
+        $DB->update_record('task_adhoc', $record);
     }
 
     /**
@@ -788,6 +817,8 @@ class manager {
         $record = $DB->get_record('task_scheduled', array('classname' => $classname));
         $record->nextruntime = time() + $delay;
         $record->faildelay = $delay;
+        $record->startedwhen = null;
+        $record->startedwhere = null;
         $DB->update_record('task_scheduled', $record);
 
         if ($task->is_blocking()) {
@@ -817,6 +848,27 @@ class manager {
     }
 
     /**
+     * Records that a scheduled task is starting to run.
+     *
+     * @param scheduled_task $task Task that is starting
+     * @param int $time Start time (0 = current)
+     * @throws \dml_exception If the task doesn't exist
+     */
+    public static function scheduled_task_starting(scheduled_task $task, int $time = 0) {
+        global $DB;
+
+        if (!$time) {
+            $time = time();
+        }
+        $info = self::get_process_info();
+        $classname = self::get_canonical_class_name($task);
+        $record = $DB->get_record('task_scheduled', ['classname' => $classname], '*', MUST_EXIST);
+        $record->startedwhen = $time;
+        $record->startedwhere = $info;
+        $DB->update_record('task_scheduled', $record);
+    }
+
+    /**
      * This function indicates that a scheduled task was completed successfully and should be rescheduled.
      *
      * @param \core\task\scheduled_task $task
@@ -833,6 +885,8 @@ class manager {
             $record->lastruntime = time();
             $record->faildelay = 0;
             $record->nextruntime = $task->get_next_scheduled_time();
+            $record->startedwhen = null;
+            $record->startedwhere = null;
 
             $DB->update_record('task_scheduled', $record);
         }
@@ -842,6 +896,56 @@ class manager {
             $task->get_cron_lock()->release();
         }
         $task->get_lock()->release();
+    }
+
+    /**
+     * Gets a list of currently-running tasks.
+     *
+     * The resulting object has fields 'scheduled' and 'adhoc'. Each contains another array
+     * with numeric indexes, each element of which is an object with fields 'started' (time
+     * started) and 'task' (task object). These are sorted by the class name and then start time
+     * (oldest first).
+     *
+     * If there are no running tasks of either type then the corresponding array will be
+     * present, but empty.
+     *
+     * @return \stdClass Object as described
+     * @throws \dml_exception
+     */
+    public static function get_running_tasks(): \stdClass {
+        global $DB;
+
+        $result = (object)['scheduled' => [], 'adhoc' => []];
+
+        // List running scheduled tasks.
+        $scheduled = $DB->get_records_select('task_scheduled', 'startedwhen IS NOT NULL',
+                null, 'classname, startedwhen');
+        foreach ($scheduled as $record) {
+            $task = self::scheduled_task_from_record($record);
+            // Safety check in case the task in the DB does not match a real class (maybe something
+            // was uninstalled).
+            if (!$task) {
+                continue;
+            }
+            $result->scheduled[] = (object)['startedwhen' => $record->startedwhen,
+                'startedwhere' => $record->startedwhere,
+                'task' => $task];
+        }
+
+        // List running ad-hoc tasks.
+        $adhoc = $DB->get_records_select('task_adhoc', 'startedwhen IS NOT NULL',
+                null, 'classname, startedwhen');
+        foreach ($adhoc as $record) {
+            $task = self::adhoc_task_from_record($record);
+            if (!$task) {
+                continue;
+            }
+            $result->adhoc[] = (object)['startedwhen' => $record->startedwhen,
+                'startedwhere' => $record->startedwhere,
+                'task' => $task];
+        }
+
+        return $result;
     }
 
     /**
@@ -910,5 +1014,19 @@ class manager {
         }
 
         return null;
+    }
+
+    /**
+     * Gets server name and PHP process ID separated by colon.
+     *
+     * @return string Process info
+     */
+    protected static function get_process_info() {
+        $server = 'n\a';
+        if (!empty($_SERVER['HOSTNAME'])) {
+            $server = $_SERVER['HOSTNAME'];
+        }
+        $pid = getmypid();
+        return $server . ":" . $pid;
     }
 }

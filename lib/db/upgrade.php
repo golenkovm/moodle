@@ -2258,5 +2258,37 @@ function xmldb_main_upgrade($oldversion) {
         upgrade_main_savepoint(true, 2020040700.00);
     }
 
+    if ($oldversion < 2020041400.00) {
+
+        // Define field running to be added to task_scheduled.
+        $table = new xmldb_table('task_scheduled');
+        $startedwhen = new xmldb_field('startedwhen', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'disabled');
+        $startedwhere = new xmldb_field('startedwhere', XMLDB_TYPE_CHAR, '255', null, null, null, null, 'startedwhen');
+
+        // Conditionally launch add field running.
+        if (!$dbman->field_exists($table, $startedwhen)) {
+            $dbman->add_field($table, $startedwhen);
+        }
+        if (!$dbman->field_exists($table, $startedwhere)) {
+            $dbman->add_field($table, $startedwhere);
+        }
+
+        // Define field running to be added to task_adhoc.
+        $table = new xmldb_table('task_adhoc');
+        $startedwhen = new xmldb_field('startedwhen', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'blocking');
+        $startedwhere = new xmldb_field('startedwhere', XMLDB_TYPE_CHAR, '255', null, null, null, null, 'startedwhen');
+
+        // Conditionally launch add field running.
+        if (!$dbman->field_exists($table, $startedwhen)) {
+            $dbman->add_field($table, $startedwhen);
+        }
+        if (!$dbman->field_exists($table, $startedwhere)) {
+            $dbman->add_field($table, $startedwhere);
+        }
+
+        // Main savepoint reached.
+        upgrade_main_savepoint(true, 2020041400.00);
+    }
+
     return true;
 }
