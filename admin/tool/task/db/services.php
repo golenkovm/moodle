@@ -15,31 +15,25 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Scheduled tasks.
+ * Web service functions.
  *
- * @package    tool_task
- * @copyright  2014 Damyon Wiese
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package tool_task
+ * @copyright 2019 The Open University
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die;
+defined('MOODLE_INTERNAL') || die();
 
-if ($hassiteconfig) {
-    $ADMIN->add(
-        'taskconfig',
-        new admin_externalpage(
-            'scheduledtasks',
-            new lang_string('scheduledtasks', 'tool_task'),
-            "$CFG->wwwroot/$CFG->admin/tool/task/scheduledtasks.php"
-        )
-    );
+$functions = [
 
-    $ADMIN->add(
-        'taskconfig',
-        new admin_externalpage(
-            'runningtasks',
-            new lang_string('runningtasks', 'tool_task'),
-            "$CFG->wwwroot/$CFG->admin/tool/task/runningtasks.php"
-        )
-    );
-}
+    // Learning plan related functions.
+    'tool_task_get_running_tasks' => [
+        'classname'    => 'tool_task\external',
+        'methodname'   => 'get_running_tasks',
+        'classpath'    => '',
+        'description'  => 'Gets the data for the list of currently-running tasks',
+        'type'         => 'read',
+        'capabilities' => 'moodle/site:config',
+        'ajax'         => true,
+    ]
+];

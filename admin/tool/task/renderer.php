@@ -161,6 +161,101 @@ class tool_task_renderer extends plugin_renderer_base {
     }
 
     /**
+     * Gets the display name for a component.
+     *
+     * @param \core\task\task_base $task Task to name
+     * @return array Array with display name and plugin info
+     * @throws coding_exception
+     */
+    protected static function get_component_display_name(\core\task\task_base $task): array {
+        $component = $task->get_component();
+        $plugininfo = null;
+        list($type, $plugin) = core_component::normalize_component($component);
+        if ($type === 'core') {
+            return [get_string('corecomponent', 'tool_task'), null];
+        } else {
+            if ($plugininfo = core_plugin_manager::instance()->get_plugin_info($component)) {
+                $plugininfo->init_display_name();
+                return [$plugininfo->displayname, $plugininfo];
+            } else {
+                return [$component, null];
+            }
+        }
+    }
+
+    /**
+     * This function will render a list of currently running tasks.
+     *
+     * @param \stdClass $running Information about running tasks
+     * @return string HTML to output.
+     * @throws \coding_exception
+     */
+    public function running_tasks_table($running): string {
+        return $this->render_from_template('tool_task/running',
+            self::get_running_tasks_data($running));
+    }
+
+    /**
+     * Gets data used to render a table with information about currently running tasks.
+     *
+     * @param \stdClass $running Information about running tasks
+     * @return array Array of data for template
+     * @throws \coding_exception
+     */
+    public static function get_running_tasks_data($running): array {
+        $now = time();
+        $data = [
+            'scheduled' => [],
+            'adhoc' => [],
+            'anytasks' => $running->adhoc || $running->scheduled,
+            'lastupdated' => $now
+        ];
+
+        foreach ($running->scheduled as $info) {
+            $data['scheduled'][] = [
+                'taskname' => $info->task->get_name(),
+                'taskclass' => get_class($info->task),
+                'component' => self::get_component_display_name($info->task)[0],
+                'time' => self::display_elapsed_time($info->startedwhen, $now),
+                // The 'started' value is not used by the current renderer but could be needed
+                // in future, or by other callers.
+                'startedwhen' => userdate($info->startedwhen),
+                'startedwhere' => $info->startedwhere,
+            ];
+        }
+
+        foreach ($running->adhoc as $info) {
+            $data['adhoc'][] = [
+                'taskclass' => get_class($info->task),
+                'component' => self::get_component_display_name($info->task)[0],
+                'time' => self::display_elapsed_time($info->startedwhen, $now),
+                'startedwhen' => userdate($info->startedwhen),
+                'startedwhere' => $info->startedwhere,
+            ];
+        }
+
+        return $data;
+    }
+
+    /**
+     * Displays the elapsed time using one of two Moodle standard approaches: if the time is
+     * less than 120 seconds, it displays a number of seconds. Otherwise, it uses the
+     * get_time_interval_string API which displays the number of days, hours, and minutes.
+     *
+     * @param int $started Time started
+     * @param int $now Current time
+     * @return string String describing the difference
+     * @throws coding_exception
+     */
+    protected static function display_elapsed_time(int $started, int $now): string {
+        if ($now - $started < 120) {
+            return get_string('secondsleft', '', $now - $started);
+        } else {
+            return get_time_interval_string($started, $now);
+        }
+    }
+
+    /**
      * Nicely display the name of a component, with its disabled status and internal name.
      *
      * @param string $component component name, e.g. 'core' or 'mod_forum'.

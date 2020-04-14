@@ -15,31 +15,32 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Scheduled tasks.
+ * Running task admin page.
  *
  * @package    tool_task
- * @copyright  2014 Damyon Wiese
+ * @copyright  2020 Catalyst IT
+ * @author     Mikhail Golenkov <mikhailgolenkov@catalyst-au.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die;
+require_once(__DIR__ . '/../../../config.php');
+require_once($CFG->libdir.'/adminlib.php');
+require_once($CFG->libdir.'/tablelib.php');
 
-if ($hassiteconfig) {
-    $ADMIN->add(
-        'taskconfig',
-        new admin_externalpage(
-            'scheduledtasks',
-            new lang_string('scheduledtasks', 'tool_task'),
-            "$CFG->wwwroot/$CFG->admin/tool/task/scheduledtasks.php"
-        )
-    );
+admin_externalpage_setup('runningtasks');
 
-    $ADMIN->add(
-        'taskconfig',
-        new admin_externalpage(
-            'runningtasks',
-            new lang_string('runningtasks', 'tool_task'),
-            "$CFG->wwwroot/$CFG->admin/tool/task/runningtasks.php"
-        )
-    );
-}
+$task = null;
+$mform = null;
+
+$renderer = $PAGE->get_renderer('tool_task');
+
+echo $OUTPUT->header();
+$PAGE->requires->js_call_amd('tool_task/runningtasks', 'init');
+$PAGE->requires->strings_for_js(['ok', 'error'], 'moodle');
+$PAGE->requires->strings_for_js(['errorloading'], 'tool_task');
+
+$running = core\task\manager::get_running_tasks();
+echo $renderer->running_tasks_table($running);
+
+echo $OUTPUT->footer();
+
