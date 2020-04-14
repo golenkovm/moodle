@@ -356,6 +356,17 @@ class tool_task_renderer extends plugin_renderer_base {
     }
 
     /**
+     * Displays a warning on the page if cron is disabled.
+     *
+     * @return string HTML code for information about cron being disabled
+     * @throws moodle_exception
+     */
+    public function cron_disabled(): string {
+        return $this->render_from_template('tool_task/disabled',
+                ['url' => new moodle_url('/admin/settings.php', ['section' => 'taskprocessing'])]);
+    }
+
+    /**
      * Renders a link back to the scheduled tasks page (used from the 'run now' screen).
      *
      * @param string $taskclassname if specified, the list of tasks will scroll to show this task.

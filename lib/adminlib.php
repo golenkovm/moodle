@@ -8503,6 +8503,7 @@ function admin_write_settings($formdata) {
     $settings = admin_find_write_settings($adminroot, $data);
 
     $count = 0;
+    $shouldclearcaches = false;
     foreach ($settings as $fullname=>$setting) {
         /** @var $setting admin_setting */
         $original = $setting->get_setting();
@@ -8517,7 +8518,16 @@ function admin_write_settings($formdata) {
         }
         if ($setting->post_write_settings($original)) {
             $count++;
+            if (\core\task\manager::should_clear_caches_after_change($setting->name)) {
+                $shouldclearcaches = true;
+            }
         }
+    }
+
+    if ($shouldclearcaches) {
+        // In order for the settings to take effect,
+        // clear the caches and shut down running cron processes.
+        \core\task\manager::clear_static_caches();
     }
 
     if ($olddbsessions != !empty($CFG->dbsessions)) {

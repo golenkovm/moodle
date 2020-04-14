@@ -39,6 +39,10 @@ $PAGE->requires->js_call_amd('tool_task/runningtasks', 'init');
 $PAGE->requires->strings_for_js(['ok', 'error'], 'moodle');
 $PAGE->requires->strings_for_js(['errorloading'], 'tool_task');
 
+if (!get_config('core', 'cron_enabled')) {
+    echo $renderer->cron_disabled();
+}
+
 $running = core\task\manager::get_running_tasks();
 echo $renderer->running_tasks_table($running);
 

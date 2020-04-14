@@ -81,7 +81,7 @@ class run_from_cli {
 
             // Shell-escaped task name.
             $classname = get_class($task);
-            $taskarg   = escapeshellarg("--execute={$classname}");
+            $taskarg   = escapeshellarg("--execute={$classname}") . " " . escapeshellarg("--force");
 
             // Build the CLI command.
             $command = "{$phpbinary} {$scriptpath} {$taskarg}";

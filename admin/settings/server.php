@@ -217,6 +217,15 @@ $ADMIN->add('server', $temp);
 $ADMIN->add('server', new admin_category('taskconfig', new lang_string('taskadmintitle', 'admin')));
 $temp = new admin_settingpage('taskprocessing', new lang_string('taskprocessing','admin'));
 $temp->add(
+    new admin_setting_configcheckbox(
+        'cron_enabled',
+        new lang_string('cron_enabled', 'admin'),
+        new lang_string('cron_enabled_desc', 'admin'),
+        1
+    )
+);
+
+$temp->add(
     new admin_setting_configtext(
         'task_scheduled_concurrency_limit',
         new lang_string('task_scheduled_concurrency_limit', 'admin'),

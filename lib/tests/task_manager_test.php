@@ -193,5 +193,34 @@ class core_task_manager_testcase extends advanced_testcase {
         $this->assertEquals($expected, $result);
     }
 
+    /**
+     * Provider for test_should_clear_caches_after_change.
+     *
+     * @return array
+     */
+    public function test_should_clear_caches_after_change_provider() {
+        return [
+            ['', false],
+            ['non_cron_related_setting', false],
+            ['cron_enabled', true],
+            ['task_scheduled_concurrency_limit', true],
+            ['task_scheduled_max_runtime', true],
+            ['task_adhoc_concurrency_limit', true],
+            ['task_adhoc_max_runtime', true],
+        ];
+    }
+
+    /**
+     * Test should_clear_caches_after_change() static method.
+     *
+     * @dataProvider test_should_clear_caches_after_change_provider
+     * @param string $settingname Name of setting that was changed.
+     * @param boolean $expected Expected result.
+     * @return void
+     */
+    public function test_should_clear_caches_after_change($settingname, $expected) {
+        $result = \core\task\manager::should_clear_caches_after_change($settingname);
+        $this->assertEquals($expected, $result);
+    }
 }
 

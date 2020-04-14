@@ -1029,4 +1029,22 @@ class manager {
         $pid = getmypid();
         return $server . ":" . $pid;
     }
+
+    /**
+     * This function is used to indicate whether or not clear
+     * static caches after admin setting was changed.
+     *
+     * @param string $settingname Name of setting that was changed.
+     * @return boolean whether or not clear static caches.
+     */
+    public static function should_clear_caches_after_change($settingname) {
+        $shouldclear = [
+            'cron_enabled',
+            'task_scheduled_concurrency_limit',
+            'task_scheduled_max_runtime',
+            'task_adhoc_concurrency_limit',
+            'task_adhoc_max_runtime',
+        ];
+        return in_array($settingname, $shouldclear);
+    }
 }

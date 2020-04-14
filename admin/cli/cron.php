@@ -39,10 +39,18 @@ list($options, $unrecognized) = cli_get_params(
     array(
         'help' => false,
         'stop' => false,
+        'force' => false,
+        'enable' => false,
+        'disable' => false,
+        'disable-wait' => false,
     ),
     array(
         'h' => 'help',
         's' => 'stop',
+        'f' => 'force',
+        'e' => 'enable',
+        'd' => 'disable',
+        'w' => 'disable-wait',
     )
 );
 
@@ -58,6 +66,10 @@ if ($options['help']) {
 Options:
 -h, --help            Print out this help
 -s, --stop            Notify all other running cron processes to stop after the current task
+-f, --force           Execute task even if cron is disabled
+-e, --enable          Enable cron
+-d, --disable         Disable cron
+-w, --disable-wait    Disable cron and wait until all tasks finished
 
 Example:
 \$sudo -u www-data /usr/bin/php admin/cli/cron.php
@@ -72,6 +84,43 @@ if ($options['stop']) {
     // to exit after finishing the current task.
     \core\task\manager::clear_static_caches();
     die;
+}
+
+if ($options['enable']) {
+    set_config('cron_enabled', 1);
+    mtrace('Cron has been enabled for the site.');
+    exit(0);
+}
+
+if ($options['disable']) {
+    set_config('cron_enabled', 0);
+    \core\task\manager::clear_static_caches();
+    mtrace('Cron has been disabled for the site.');
+    exit(0);
+}
+
+if ($options['disable-wait']) {
+    set_config('cron_enabled', 0);
+    \core\task\manager::clear_static_caches();
+    mtrace('Cron has been disabled for the site.');
+    mtrace('Waiting for tasks to finish', '');
+    $wait = true;
+    while ($wait) {
+        mtrace('.', '');
+        $tasks = \core\task\manager::get_running_tasks();
+        if (count($tasks->scheduled) == 0 && count($tasks->adhoc) == 0) {
+            $wait = false;
+        }
+        sleep(1);
+    }
+    mtrace('');
+    mtrace('All scheduled and adhoc tasks finished.');
+    exit(0);
+}
+
+if (!get_config('core', 'cron_enabled') && !$options['force']) {
+    mtrace('Cron is disabled. Use --force to override.');
+    exit(1);
 }
 
 \core\local\cli\shutdown::script_supports_graceful_exit();
