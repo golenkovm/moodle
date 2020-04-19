@@ -38,6 +38,9 @@ information provided here is intended especially for developers.
 * H5P libraries have been moved from /lib/h5p to h5p/h5plib as an h5plib plugintype.
 * mdn-polyfills has been renamed to polyfills. The reason there is no polyfill from the MDN is
   because there is no example polyfills on the MDN for this functionality.
+* The task system has new functions adhoc_task_starting() and scheduled_task_starting() which must
+  be called before executing a task, and a new function \core\task\manager::get_running_tasks()
+  returns information about currently-running tasks.
 
 === 3.8 ===
 * Add CLI option to notify all cron tasks to stop: admin/cli/cron.php --stop

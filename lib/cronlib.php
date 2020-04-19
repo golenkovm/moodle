@@ -234,6 +234,7 @@ function cron_run_adhoc_tasks(int $timenow, $keepalive = 0, $checklimits = true)
 function cron_run_inner_scheduled_task(\core\task\task_base $task) {
     global $CFG, $DB;
 
+    \core\task\manager::scheduled_task_starting($task);
     \core\task\logmanager::start_logging($task);
 
     $fullname = $task->get_name() . ' (' . get_class($task) . ')';
@@ -288,6 +289,7 @@ function cron_run_inner_scheduled_task(\core\task\task_base $task) {
 function cron_run_inner_adhoc_task(\core\task\adhoc_task $task) {
     global $DB, $CFG;
 
+    \core\task\manager::adhoc_task_starting($task);
     \core\task\logmanager::start_logging($task);
 
     mtrace("Execute adhoc task: " . get_class($task));
