@@ -1,0 +1,2437 @@
+diff --git a/composer.json b/composer.json
+index 93dde7fe926..deab87e8fa3 100644
+--- a/composer.json
++++ b/composer.json
+@@ -4,6 +4,7 @@
+         "phpunit/dbUnit": "1.4.1",
+         "sebastian/environment": "1.3.7",
+         "sebastian/recursion-context": "1.0.2",
+-        "moodlehq/behat-extension": "3.31.6"
++        "moodlehq/behat-extension": "3.31.6",
++        "mikey179/vfsStream": "^1.6"
+     }
+ }
+diff --git a/composer.lock b/composer.lock
+index 3092748002b..696fa2857e5 100644
+--- a/composer.lock
++++ b/composer.lock
+@@ -4,7 +4,7 @@
+         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+         "This file is @generated automatically"
+     ],
+-    "content-hash": "be501c2af95e3e00762b8cf30d957b2b",
++    "content-hash": "6a6e11823cc7430f0fcea797d1a7ebce",
+     "packages": [],
+     "packages-dev": [
+         {
+@@ -531,29 +531,29 @@
+         },
+         {
+             "name": "fabpot/goutte",
+-            "version": "v2.0.4",
++            "version": "v3.2.1",
+             "source": {
+                 "type": "git",
+                 "url": "https://github.com/FriendsOfPHP/Goutte.git",
+-                "reference": "0ad3ee6dc2d0aaa832a80041a1e09bf394e99802"
++                "reference": "db5c28f4a010b4161d507d5304e28a7ebf211638"
+             },
+             "dist": {
+                 "type": "zip",
+-                "url": "https://api.github.com/repos/FriendsOfPHP/Goutte/zipball/0ad3ee6dc2d0aaa832a80041a1e09bf394e99802",
+-                "reference": "0ad3ee6dc2d0aaa832a80041a1e09bf394e99802",
++                "url": "https://api.github.com/repos/FriendsOfPHP/Goutte/zipball/db5c28f4a010b4161d507d5304e28a7ebf211638",
++                "reference": "db5c28f4a010b4161d507d5304e28a7ebf211638",
+                 "shasum": ""
+             },
+             "require": {
+-                "guzzlehttp/guzzle": ">=4,<6",
+-                "php": ">=5.4.0",
+-                "symfony/browser-kit": "~2.1",
+-                "symfony/css-selector": "~2.1",
+-                "symfony/dom-crawler": "~2.1"
++                "guzzlehttp/guzzle": "^6.0",
++                "php": ">=5.5.0",
++                "symfony/browser-kit": "~2.1|~3.0",
++                "symfony/css-selector": "~2.1|~3.0",
++                "symfony/dom-crawler": "~2.1|~3.0"
+             },
+             "type": "application",
+             "extra": {
+                 "branch-alias": {
+-                    "dev-master": "2.0-dev"
++                    "dev-master": "3.2-dev"
+                 }
+             },
+             "autoload": {
+@@ -576,32 +576,42 @@
+             "keywords": [
+                 "scraper"
+             ],
+-            "time": "2015-05-05T21:14:57+00:00"
++            "time": "2017-01-03T13:21:43+00:00"
+         },
+         {
+             "name": "guzzlehttp/guzzle",
+-            "version": "5.3.1",
++            "version": "6.2.2",
+             "source": {
+                 "type": "git",
+                 "url": "https://github.com/guzzle/guzzle.git",
+-                "reference": "70f1fa53b71c4647bf2762c09068a95f77e12fb8"
++                "reference": "ebf29dee597f02f09f4d5bbecc68230ea9b08f60"
+             },
+             "dist": {
+                 "type": "zip",
+-                "url": "https://api.github.com/repos/guzzle/guzzle/zipball/70f1fa53b71c4647bf2762c09068a95f77e12fb8",
+-                "reference": "70f1fa53b71c4647bf2762c09068a95f77e12fb8",
++                "url": "https://api.github.com/repos/guzzle/guzzle/zipball/ebf29dee597f02f09f4d5bbecc68230ea9b08f60",
++                "reference": "ebf29dee597f02f09f4d5bbecc68230ea9b08f60",
+                 "shasum": ""
+             },
+             "require": {
+-                "guzzlehttp/ringphp": "^1.1",
+-                "php": ">=5.4.0"
++                "guzzlehttp/promises": "^1.0",
++                "guzzlehttp/psr7": "^1.3.1",
++                "php": ">=5.5"
+             },
+             "require-dev": {
+                 "ext-curl": "*",
+-                "phpunit/phpunit": "^4.0"
++                "phpunit/phpunit": "^4.0",
++                "psr/log": "^1.0"
+             },
+             "type": "library",
++            "extra": {
++                "branch-alias": {
++                    "dev-master": "6.2-dev"
++                }
++            },
+             "autoload": {
++                "files": [
++                    "src/functions_include.php"
++                ],
+                 "psr-4": {
+                     "GuzzleHttp\\": "src/"
+                 }
+@@ -617,7 +627,7 @@
+                     "homepage": "https://github.com/mtdowling"
+                 }
+             ],
+-            "description": "Guzzle is a PHP HTTP client library and framework for building RESTful web service clients",
++            "description": "Guzzle is a PHP HTTP client library",
+             "homepage": "http://guzzlephp.org/",
+             "keywords": [
+                 "client",
+@@ -628,44 +638,41 @@
+                 "rest",
+                 "web service"
+             ],
+-            "time": "2016-07-15T19:28:39+00:00"
++            "time": "2016-10-08T15:01:37+00:00"
+         },
+         {
+-            "name": "guzzlehttp/ringphp",
+-            "version": "1.1.0",
++            "name": "guzzlehttp/promises",
++            "version": "v1.3.1",
+             "source": {
+                 "type": "git",
+-                "url": "https://github.com/guzzle/RingPHP.git",
+-                "reference": "dbbb91d7f6c191e5e405e900e3102ac7f261bc0b"
++                "url": "https://github.com/guzzle/promises.git",
++                "reference": "a59da6cf61d80060647ff4d3eb2c03a2bc694646"
+             },
+             "dist": {
+                 "type": "zip",
+-                "url": "https://api.github.com/repos/guzzle/RingPHP/zipball/dbbb91d7f6c191e5e405e900e3102ac7f261bc0b",
+-                "reference": "dbbb91d7f6c191e5e405e900e3102ac7f261bc0b",
++                "url": "https://api.github.com/repos/guzzle/promises/zipball/a59da6cf61d80060647ff4d3eb2c03a2bc694646",
++                "reference": "a59da6cf61d80060647ff4d3eb2c03a2bc694646",
+                 "shasum": ""
+             },
+             "require": {
+-                "guzzlehttp/streams": "~3.0",
+-                "php": ">=5.4.0",
+-                "react/promise": "~2.0"
++                "php": ">=5.5.0"
+             },
+             "require-dev": {
+-                "ext-curl": "*",
+-                "phpunit/phpunit": "~4.0"
+-            },
+-            "suggest": {
+-                "ext-curl": "Guzzle will use specific adapters if cURL is present"
++                "phpunit/phpunit": "^4.0"
+             },
+             "type": "library",
+             "extra": {
+                 "branch-alias": {
+-                    "dev-master": "1.1-dev"
++                    "dev-master": "1.4-dev"
+                 }
+             },
+             "autoload": {
+                 "psr-4": {
+-                    "GuzzleHttp\\Ring\\": "src/"
+-                }
++                    "GuzzleHttp\\Promise\\": "src/"
++                },
++                "files": [
++                    "src/functions_include.php"
++                ]
+             },
+             "notification-url": "https://packagist.org/downloads/",
+             "license": [
+@@ -678,25 +685,32 @@
+                     "homepage": "https://github.com/mtdowling"
+                 }
+             ],
+-            "description": "Provides a simple API and specification that abstracts away the details of HTTP into a single PHP function.",
+-            "time": "2015-05-20T03:37:09+00:00"
++            "description": "Guzzle promises library",
++            "keywords": [
++                "promise"
++            ],
++            "time": "2016-12-20T10:07:11+00:00"
+         },
+         {
+-            "name": "guzzlehttp/streams",
+-            "version": "3.0.0",
++            "name": "guzzlehttp/psr7",
++            "version": "1.4.0",
+             "source": {
+                 "type": "git",
+-                "url": "https://github.com/guzzle/streams.git",
+-                "reference": "47aaa48e27dae43d39fc1cea0ccf0d84ac1a2ba5"
++                "url": "https://github.com/guzzle/psr7.git",
++                "reference": "04a6d1a00ea5da0727ee94309a9f0d3dbaecb569"
+             },
+             "dist": {
+                 "type": "zip",
+-                "url": "https://api.github.com/repos/guzzle/streams/zipball/47aaa48e27dae43d39fc1cea0ccf0d84ac1a2ba5",
+-                "reference": "47aaa48e27dae43d39fc1cea0ccf0d84ac1a2ba5",
++                "url": "https://api.github.com/repos/guzzle/psr7/zipball/04a6d1a00ea5da0727ee94309a9f0d3dbaecb569",
++                "reference": "04a6d1a00ea5da0727ee94309a9f0d3dbaecb569",
+                 "shasum": ""
+             },
+             "require": {
+-                "php": ">=5.4.0"
++                "php": ">=5.4.0",
++                "psr/http-message": "~1.0"
++            },
++            "provide": {
++                "psr/http-message-implementation": "1.0"
+             },
+             "require-dev": {
+                 "phpunit/phpunit": "~4.0"
+@@ -704,13 +718,16 @@
+             "type": "library",
+             "extra": {
+                 "branch-alias": {
+-                    "dev-master": "3.0-dev"
++                    "dev-master": "1.4-dev"
+                 }
+             },
+             "autoload": {
+                 "psr-4": {
+-                    "GuzzleHttp\\Stream\\": "src/"
+-                }
++                    "GuzzleHttp\\Psr7\\": "src/"
++                },
++                "files": [
++                    "src/functions_include.php"
++                ]
+             },
+             "notification-url": "https://packagist.org/downloads/",
+             "license": [
+@@ -721,15 +738,23 @@
+                     "name": "Michael Dowling",
+                     "email": "mtdowling@gmail.com",
+                     "homepage": "https://github.com/mtdowling"
++                },
++                {
++                    "name": "Tobias Schultze",
++                    "homepage": "https://github.com/Tobion"
+                 }
+             ],
+-            "description": "Provides a simple abstraction over streams of data",
+-            "homepage": "http://guzzlephp.org/",
++            "description": "PSR-7 message implementation that also provides common utility methods",
+             "keywords": [
+-                "Guzzle",
+-                "stream"
+-            ],
+-            "time": "2014-10-12T19:18:40+00:00"
++                "http",
++                "message",
++                "request",
++                "response",
++                "stream",
++                "uri",
++                "url"
++            ],
++            "time": "2017-02-21T01:20:32+00:00"
+         },
+         {
+             "name": "instaclick/php-webdriver",
+@@ -789,6 +814,52 @@
+             ],
+             "time": "2015-06-15T20:19:33+00:00"
+         },
++        {
++            "name": "mikey179/vfsStream",
++            "version": "v1.6.4",
++            "source": {
++                "type": "git",
++                "url": "https://github.com/mikey179/vfsStream.git",
++                "reference": "0247f57b2245e8ad2e689d7cee754b45fbabd592"
++            },
++            "dist": {
++                "type": "zip",
++                "url": "https://api.github.com/repos/mikey179/vfsStream/zipball/0247f57b2245e8ad2e689d7cee754b45fbabd592",
++                "reference": "0247f57b2245e8ad2e689d7cee754b45fbabd592",
++                "shasum": ""
++            },
++            "require": {
++                "php": ">=5.3.0"
++            },
++            "require-dev": {
++                "phpunit/phpunit": "~4.5"
++            },
++            "type": "library",
++            "extra": {
++                "branch-alias": {
++                    "dev-master": "1.6.x-dev"
++                }
++            },
++            "autoload": {
++                "psr-0": {
++                    "org\\bovigo\\vfs\\": "src/main/php"
++                }
++            },
++            "notification-url": "https://packagist.org/downloads/",
++            "license": [
++                "BSD-3-Clause"
++            ],
++            "authors": [
++                {
++                    "name": "Frank Kleine",
++                    "homepage": "http://frankkleine.de/",
++                    "role": "Developer"
++                }
++            ],
++            "description": "Virtual file system to mock the real file system in unit tests.",
++            "homepage": "http://vfs.bovigo.org/",
++            "time": "2016-07-18T14:02:57+00:00"
++        },
+         {
+             "name": "moodlehq/behat-extension",
+             "version": "v3.31.6",
+@@ -838,39 +909,136 @@
+             ],
+             "time": "2017-01-19T00:08:20+00:00"
+         },
++        {
++            "name": "phpdocumentor/reflection-common",
++            "version": "1.0",
++            "source": {
++                "type": "git",
++                "url": "https://github.com/phpDocumentor/ReflectionCommon.git",
++                "reference": "144c307535e82c8fdcaacbcfc1d6d8eeb896687c"
++            },
++            "dist": {
++                "type": "zip",
++                "url": "https://api.github.com/repos/phpDocumentor/ReflectionCommon/zipball/144c307535e82c8fdcaacbcfc1d6d8eeb896687c",
++                "reference": "144c307535e82c8fdcaacbcfc1d6d8eeb896687c",
++                "shasum": ""
++            },
++            "require": {
++                "php": ">=5.5"
++            },
++            "require-dev": {
++                "phpunit/phpunit": "^4.6"
++            },
++            "type": "library",
++            "extra": {
++                "branch-alias": {
++                    "dev-master": "1.0.x-dev"
++                }
++            },
++            "autoload": {
++                "psr-4": {
++                    "phpDocumentor\\Reflection\\": [
++                        "src"
++                    ]
++                }
++            },
++            "notification-url": "https://packagist.org/downloads/",
++            "license": [
++                "MIT"
++            ],
++            "authors": [
++                {
++                    "name": "Jaap van Otterdijk",
++                    "email": "opensource@ijaap.nl"
++                }
++            ],
++            "description": "Common reflection classes used by phpdocumentor to reflect the code structure",
++            "homepage": "http://www.phpdoc.org",
++            "keywords": [
++                "FQSEN",
++                "phpDocumentor",
++                "phpdoc",
++                "reflection",
++                "static analysis"
++            ],
++            "time": "2015-12-27T11:43:31+00:00"
++        },
+         {
+             "name": "phpdocumentor/reflection-docblock",
+-            "version": "2.0.4",
++            "version": "3.1.1",
+             "source": {
+                 "type": "git",
+                 "url": "https://github.com/phpDocumentor/ReflectionDocBlock.git",
+-                "reference": "d68dbdc53dc358a816f00b300704702b2eaff7b8"
++                "reference": "8331b5efe816ae05461b7ca1e721c01b46bafb3e"
+             },
+             "dist": {
+                 "type": "zip",
+-                "url": "https://api.github.com/repos/phpDocumentor/ReflectionDocBlock/zipball/d68dbdc53dc358a816f00b300704702b2eaff7b8",
+-                "reference": "d68dbdc53dc358a816f00b300704702b2eaff7b8",
++                "url": "https://api.github.com/repos/phpDocumentor/ReflectionDocBlock/zipball/8331b5efe816ae05461b7ca1e721c01b46bafb3e",
++                "reference": "8331b5efe816ae05461b7ca1e721c01b46bafb3e",
+                 "shasum": ""
+             },
+             "require": {
+-                "php": ">=5.3.3"
++                "php": ">=5.5",
++                "phpdocumentor/reflection-common": "^1.0@dev",
++                "phpdocumentor/type-resolver": "^0.2.0",
++                "webmozart/assert": "^1.0"
+             },
+             "require-dev": {
+-                "phpunit/phpunit": "~4.0"
++                "mockery/mockery": "^0.9.4",
++                "phpunit/phpunit": "^4.4"
+             },
+-            "suggest": {
+-                "dflydev/markdown": "~1.0",
+-                "erusev/parsedown": "~1.0"
++            "type": "library",
++            "autoload": {
++                "psr-4": {
++                    "phpDocumentor\\Reflection\\": [
++                        "src/"
++                    ]
++                }
++            },
++            "notification-url": "https://packagist.org/downloads/",
++            "license": [
++                "MIT"
++            ],
++            "authors": [
++                {
++                    "name": "Mike van Riel",
++                    "email": "me@mikevanriel.com"
++                }
++            ],
++            "description": "With this component, a library can provide support for annotations via DocBlocks or otherwise retrieve information that is embedded in a DocBlock.",
++            "time": "2016-09-30T07:12:33+00:00"
++        },
++        {
++            "name": "phpdocumentor/type-resolver",
++            "version": "0.2.1",
++            "source": {
++                "type": "git",
++                "url": "https://github.com/phpDocumentor/TypeResolver.git",
++                "reference": "e224fb2ea2fba6d3ad6fdaef91cd09a172155ccb"
++            },
++            "dist": {
++                "type": "zip",
++                "url": "https://api.github.com/repos/phpDocumentor/TypeResolver/zipball/e224fb2ea2fba6d3ad6fdaef91cd09a172155ccb",
++                "reference": "e224fb2ea2fba6d3ad6fdaef91cd09a172155ccb",
++                "shasum": ""
++            },
++            "require": {
++                "php": ">=5.5",
++                "phpdocumentor/reflection-common": "^1.0"
++            },
++            "require-dev": {
++                "mockery/mockery": "^0.9.4",
++                "phpunit/phpunit": "^5.2||^4.8.24"
+             },
+             "type": "library",
+             "extra": {
+                 "branch-alias": {
+-                    "dev-master": "2.0.x-dev"
++                    "dev-master": "1.0.x-dev"
+                 }
+             },
+             "autoload": {
+-                "psr-0": {
+-                    "phpDocumentor": [
++                "psr-4": {
++                    "phpDocumentor\\Reflection\\": [
+                         "src/"
+                     ]
+                 }
+@@ -882,10 +1050,10 @@
+             "authors": [
+                 {
+                     "name": "Mike van Riel",
+-                    "email": "mike.vanriel@naenius.com"
++                    "email": "me@mikevanriel.com"
+                 }
+             ],
+-            "time": "2015-02-03T12:10:50+00:00"
++            "time": "2016-11-25T06:54:22+00:00"
+         },
+         {
+             "name": "phpspec/prophecy",
+@@ -1205,16 +1373,16 @@
+         },
+         {
+             "name": "phpunit/php-token-stream",
+-            "version": "1.4.9",
++            "version": "1.4.10",
+             "source": {
+                 "type": "git",
+                 "url": "https://github.com/sebastianbergmann/php-token-stream.git",
+-                "reference": "3b402f65a4cc90abf6e1104e388b896ce209631b"
++                "reference": "284fb0679dd25fb5ffb56dad92c72860c0a22f1b"
+             },
+             "dist": {
+                 "type": "zip",
+-                "url": "https://api.github.com/repos/sebastianbergmann/php-token-stream/zipball/3b402f65a4cc90abf6e1104e388b896ce209631b",
+-                "reference": "3b402f65a4cc90abf6e1104e388b896ce209631b",
++                "url": "https://api.github.com/repos/sebastianbergmann/php-token-stream/zipball/284fb0679dd25fb5ffb56dad92c72860c0a22f1b",
++                "reference": "284fb0679dd25fb5ffb56dad92c72860c0a22f1b",
+                 "shasum": ""
+             },
+             "require": {
+@@ -1250,7 +1418,7 @@
+             "keywords": [
+                 "tokenizer"
+             ],
+-            "time": "2016-11-15T14:06:22+00:00"
++            "time": "2017-02-23T06:14:45+00:00"
+         },
+         {
+             "name": "phpunit/phpunit",
+@@ -1381,17 +1549,17 @@
+             "time": "2015-10-02T06:51:40+00:00"
+         },
+         {
+-            "name": "psr/log",
+-            "version": "1.0.2",
++            "name": "psr/http-message",
++            "version": "1.0.1",
+             "source": {
+                 "type": "git",
+-                "url": "https://github.com/php-fig/log.git",
+-                "reference": "4ebe3a8bf773a19edfe0a84b6585ba3d401b724d"
++                "url": "https://github.com/php-fig/http-message.git",
++                "reference": "f6561bf28d520154e4b0ec72be95418abe6d9363"
+             },
+             "dist": {
+                 "type": "zip",
+-                "url": "https://api.github.com/repos/php-fig/log/zipball/4ebe3a8bf773a19edfe0a84b6585ba3d401b724d",
+-                "reference": "4ebe3a8bf773a19edfe0a84b6585ba3d401b724d",
++                "url": "https://api.github.com/repos/php-fig/http-message/zipball/f6561bf28d520154e4b0ec72be95418abe6d9363",
++                "reference": "f6561bf28d520154e4b0ec72be95418abe6d9363",
+                 "shasum": ""
+             },
+             "require": {
+@@ -1405,7 +1573,7 @@
+             },
+             "autoload": {
+                 "psr-4": {
+-                    "Psr\\Log\\": "Psr/Log/"
++                    "Psr\\Http\\Message\\": "src/"
+                 }
+             },
+             "notification-url": "https://packagist.org/downloads/",
+@@ -1418,40 +1586,45 @@
+                     "homepage": "http://www.php-fig.org/"
+                 }
+             ],
+-            "description": "Common interface for logging libraries",
+-            "homepage": "https://github.com/php-fig/log",
++            "description": "Common interface for HTTP messages",
++            "homepage": "https://github.com/php-fig/http-message",
+             "keywords": [
+-                "log",
++                "http",
++                "http-message",
+                 "psr",
+-                "psr-3"
++                "psr-7",
++                "request",
++                "response"
+             ],
+-            "time": "2016-10-10T12:19:37+00:00"
++            "time": "2016-08-06T14:39:51+00:00"
+         },
+         {
+-            "name": "react/promise",
+-            "version": "v2.5.0",
++            "name": "psr/log",
++            "version": "1.0.2",
+             "source": {
+                 "type": "git",
+-                "url": "https://github.com/reactphp/promise.git",
+-                "reference": "2760f3898b7e931aa71153852dcd48a75c9b95db"
++                "url": "https://github.com/php-fig/log.git",
++                "reference": "4ebe3a8bf773a19edfe0a84b6585ba3d401b724d"
+             },
+             "dist": {
+                 "type": "zip",
+-                "url": "https://api.github.com/repos/reactphp/promise/zipball/2760f3898b7e931aa71153852dcd48a75c9b95db",
+-                "reference": "2760f3898b7e931aa71153852dcd48a75c9b95db",
++                "url": "https://api.github.com/repos/php-fig/log/zipball/4ebe3a8bf773a19edfe0a84b6585ba3d401b724d",
++                "reference": "4ebe3a8bf773a19edfe0a84b6585ba3d401b724d",
+                 "shasum": ""
+             },
+             "require": {
+-                "php": ">=5.4.0"
++                "php": ">=5.3.0"
+             },
+             "type": "library",
++            "extra": {
++                "branch-alias": {
++                    "dev-master": "1.0.x-dev"
++                }
++            },
+             "autoload": {
+                 "psr-4": {
+-                    "React\\Promise\\": "src/"
+-                },
+-                "files": [
+-                    "src/functions_include.php"
+-                ]
++                    "Psr\\Log\\": "Psr/Log/"
++                }
+             },
+             "notification-url": "https://packagist.org/downloads/",
+             "license": [
+@@ -1459,29 +1632,31 @@
+             ],
+             "authors": [
+                 {
+-                    "name": "Jan Sorgalla",
+-                    "email": "jsorgalla@gmail.com"
++                    "name": "PHP-FIG",
++                    "homepage": "http://www.php-fig.org/"
+                 }
+             ],
+-            "description": "A lightweight implementation of CommonJS Promises/A for PHP",
++            "description": "Common interface for logging libraries",
++            "homepage": "https://github.com/php-fig/log",
+             "keywords": [
+-                "promise",
+-                "promises"
++                "log",
++                "psr",
++                "psr-3"
+             ],
+-            "time": "2016-12-22T14:09:01+00:00"
++            "time": "2016-10-10T12:19:37+00:00"
+         },
+         {
+             "name": "sebastian/comparator",
+-            "version": "1.2.2",
++            "version": "1.2.4",
+             "source": {
+                 "type": "git",
+                 "url": "https://github.com/sebastianbergmann/comparator.git",
+-                "reference": "6a1ed12e8b2409076ab22e3897126211ff8b1f7f"
++                "reference": "2b7424b55f5047b47ac6e5ccb20b2aea4011d9be"
+             },
+             "dist": {
+                 "type": "zip",
+-                "url": "https://api.github.com/repos/sebastianbergmann/comparator/zipball/6a1ed12e8b2409076ab22e3897126211ff8b1f7f",
+-                "reference": "6a1ed12e8b2409076ab22e3897126211ff8b1f7f",
++                "url": "https://api.github.com/repos/sebastianbergmann/comparator/zipball/2b7424b55f5047b47ac6e5ccb20b2aea4011d9be",
++                "reference": "2b7424b55f5047b47ac6e5ccb20b2aea4011d9be",
+                 "shasum": ""
+             },
+             "require": {
+@@ -1532,7 +1707,7 @@
+                 "compare",
+                 "equality"
+             ],
+-            "time": "2016-11-19T09:18:40+00:00"
++            "time": "2017-01-29T09:50:25+00:00"
+         },
+         {
+             "name": "sebastian/diff",
+@@ -1844,25 +2019,25 @@
+         },
+         {
+             "name": "symfony/browser-kit",
+-            "version": "v2.8.16",
++            "version": "v3.2.4",
+             "source": {
+                 "type": "git",
+                 "url": "https://github.com/symfony/browser-kit.git",
+-                "reference": "d2a5de15c8341a470a66becf4597bc675686a72b"
++                "reference": "394a2475a3a89089353fde5714a7f402fbb83880"
+             },
+             "dist": {
+                 "type": "zip",
+-                "url": "https://api.github.com/repos/symfony/browser-kit/zipball/d2a5de15c8341a470a66becf4597bc675686a72b",
+-                "reference": "d2a5de15c8341a470a66becf4597bc675686a72b",
++                "url": "https://api.github.com/repos/symfony/browser-kit/zipball/394a2475a3a89089353fde5714a7f402fbb83880",
++                "reference": "394a2475a3a89089353fde5714a7f402fbb83880",
+                 "shasum": ""
+             },
+             "require": {
+-                "php": ">=5.3.9",
+-                "symfony/dom-crawler": "~2.1|~3.0.0"
++                "php": ">=5.5.9",
++                "symfony/dom-crawler": "~2.8|~3.0"
+             },
+             "require-dev": {
+-                "symfony/css-selector": "~2.0,>=2.0.5|~3.0.0",
+-                "symfony/process": "~2.3.34|~2.7,>=2.7.6|~3.0.0"
++                "symfony/css-selector": "~2.8|~3.0",
++                "symfony/process": "~2.8|~3.0"
+             },
+             "suggest": {
+                 "symfony/process": ""
+@@ -1870,7 +2045,7 @@
+             "type": "library",
+             "extra": {
+                 "branch-alias": {
+-                    "dev-master": "2.8-dev"
++                    "dev-master": "3.2-dev"
+                 }
+             },
+             "autoload": {
+@@ -1897,33 +2072,36 @@
+             ],
+             "description": "Symfony BrowserKit Component",
+             "homepage": "https://symfony.com",
+-            "time": "2017-01-02T20:30:24+00:00"
++            "time": "2017-01-31T21:49:23+00:00"
+         },
+         {
+             "name": "symfony/class-loader",
+-            "version": "v2.8.16",
++            "version": "v3.2.4",
+             "source": {
+                 "type": "git",
+                 "url": "https://github.com/symfony/class-loader.git",
+-                "reference": "7c46951128f7169cbece2c303fba4a9eb35cbe68"
++                "reference": "2847d56f518ad5721bf85aa9174b3aa3fd12aa03"
+             },
+             "dist": {
+                 "type": "zip",
+-                "url": "https://api.github.com/repos/symfony/class-loader/zipball/7c46951128f7169cbece2c303fba4a9eb35cbe68",
+-                "reference": "7c46951128f7169cbece2c303fba4a9eb35cbe68",
++                "url": "https://api.github.com/repos/symfony/class-loader/zipball/2847d56f518ad5721bf85aa9174b3aa3fd12aa03",
++                "reference": "2847d56f518ad5721bf85aa9174b3aa3fd12aa03",
+                 "shasum": ""
+             },
+             "require": {
+-                "php": ">=5.3.9",
+-                "symfony/polyfill-apcu": "~1.1"
++                "php": ">=5.5.9"
+             },
+             "require-dev": {
+-                "symfony/finder": "~2.0,>=2.0.5|~3.0.0"
++                "symfony/finder": "~2.8|~3.0",
++                "symfony/polyfill-apcu": "~1.1"
++            },
++            "suggest": {
++                "symfony/polyfill-apcu": "For using ApcClassLoader on HHVM"
+             },
+             "type": "library",
+             "extra": {
+                 "branch-alias": {
+-                    "dev-master": "2.8-dev"
++                    "dev-master": "3.2-dev"
+                 }
+             },
+             "autoload": {
+@@ -1950,28 +2128,28 @@
+             ],
+             "description": "Symfony ClassLoader Component",
+             "homepage": "https://symfony.com",
+-            "time": "2017-01-10T14:03:07+00:00"
++            "time": "2017-01-21T17:06:35+00:00"
+         },
+         {
+             "name": "symfony/config",
+-            "version": "v2.8.16",
++            "version": "v3.2.4",
+             "source": {
+                 "type": "git",
+                 "url": "https://github.com/symfony/config.git",
+-                "reference": "4537f2413348fe271c2c4b09da219ed615d79f9c"
++                "reference": "9f99453e77771e629af8a25eeb0a6c4ed1e19da2"
+             },
+             "dist": {
+                 "type": "zip",
+-                "url": "https://api.github.com/repos/symfony/config/zipball/4537f2413348fe271c2c4b09da219ed615d79f9c",
+-                "reference": "4537f2413348fe271c2c4b09da219ed615d79f9c",
++                "url": "https://api.github.com/repos/symfony/config/zipball/9f99453e77771e629af8a25eeb0a6c4ed1e19da2",
++                "reference": "9f99453e77771e629af8a25eeb0a6c4ed1e19da2",
+                 "shasum": ""
+             },
+             "require": {
+-                "php": ">=5.3.9",
+-                "symfony/filesystem": "~2.3|~3.0.0"
++                "php": ">=5.5.9",
++                "symfony/filesystem": "~2.8|~3.0"
+             },
+             "require-dev": {
+-                "symfony/yaml": "~2.7|~3.0.0"
++                "symfony/yaml": "~3.0"
+             },
+             "suggest": {
+                 "symfony/yaml": "To use the yaml reference dumper"
+@@ -1979,7 +2157,7 @@
+             "type": "library",
+             "extra": {
+                 "branch-alias": {
+-                    "dev-master": "2.8-dev"
++                    "dev-master": "3.2-dev"
+                 }
+             },
+             "autoload": {
+@@ -2006,41 +2184,43 @@
+             ],
+             "description": "Symfony Config Component",
+             "homepage": "https://symfony.com",
+-            "time": "2017-01-02T20:30:24+00:00"
++            "time": "2017-02-14T16:27:43+00:00"
+         },
+         {
+             "name": "symfony/console",
+-            "version": "v2.8.16",
++            "version": "v3.2.4",
+             "source": {
+                 "type": "git",
+                 "url": "https://github.com/symfony/console.git",
+-                "reference": "2e18b8903d9c498ba02e1dfa73f64d4894bb6912"
++                "reference": "0e5e6899f82230fcb1153bcaf0e106ffaa44b870"
+             },
+             "dist": {
+                 "type": "zip",
+-                "url": "https://api.github.com/repos/symfony/console/zipball/2e18b8903d9c498ba02e1dfa73f64d4894bb6912",
+-                "reference": "2e18b8903d9c498ba02e1dfa73f64d4894bb6912",
++                "url": "https://api.github.com/repos/symfony/console/zipball/0e5e6899f82230fcb1153bcaf0e106ffaa44b870",
++                "reference": "0e5e6899f82230fcb1153bcaf0e106ffaa44b870",
+                 "shasum": ""
+             },
+             "require": {
+-                "php": ">=5.3.9",
+-                "symfony/debug": "~2.7,>=2.7.2|~3.0.0",
++                "php": ">=5.5.9",
++                "symfony/debug": "~2.8|~3.0",
+                 "symfony/polyfill-mbstring": "~1.0"
+             },
+             "require-dev": {
+                 "psr/log": "~1.0",
+-                "symfony/event-dispatcher": "~2.1|~3.0.0",
+-                "symfony/process": "~2.1|~3.0.0"
++                "symfony/event-dispatcher": "~2.8|~3.0",
++                "symfony/filesystem": "~2.8|~3.0",
++                "symfony/process": "~2.8|~3.0"
+             },
+             "suggest": {
+                 "psr/log": "For using the console logger",
+                 "symfony/event-dispatcher": "",
++                "symfony/filesystem": "",
+                 "symfony/process": ""
+             },
+             "type": "library",
+             "extra": {
+                 "branch-alias": {
+-                    "dev-master": "2.8-dev"
++                    "dev-master": "3.2-dev"
+                 }
+             },
+             "autoload": {
+@@ -2067,29 +2247,29 @@
+             ],
+             "description": "Symfony Console Component",
+             "homepage": "https://symfony.com",
+-            "time": "2017-01-08T20:43:03+00:00"
++            "time": "2017-02-16T14:07:22+00:00"
+         },
+         {
+             "name": "symfony/css-selector",
+-            "version": "v2.8.16",
++            "version": "v3.2.4",
+             "source": {
+                 "type": "git",
+                 "url": "https://github.com/symfony/css-selector.git",
+-                "reference": "f45daea42232d9ca5cf561ec64f0d4aea820877f"
++                "reference": "f0e628f04fc055c934b3211cfabdb1c59eefbfaa"
+             },
+             "dist": {
+                 "type": "zip",
+-                "url": "https://api.github.com/repos/symfony/css-selector/zipball/f45daea42232d9ca5cf561ec64f0d4aea820877f",
+-                "reference": "f45daea42232d9ca5cf561ec64f0d4aea820877f",
++                "url": "https://api.github.com/repos/symfony/css-selector/zipball/f0e628f04fc055c934b3211cfabdb1c59eefbfaa",
++                "reference": "f0e628f04fc055c934b3211cfabdb1c59eefbfaa",
+                 "shasum": ""
+             },
+             "require": {
+-                "php": ">=5.3.9"
++                "php": ">=5.5.9"
+             },
+             "type": "library",
+             "extra": {
+                 "branch-alias": {
+-                    "dev-master": "2.8-dev"
++                    "dev-master": "3.2-dev"
+                 }
+             },
+             "autoload": {
+@@ -2120,37 +2300,37 @@
+             ],
+             "description": "Symfony CssSelector Component",
+             "homepage": "https://symfony.com",
+-            "time": "2017-01-02T20:30:24+00:00"
++            "time": "2017-01-02T20:32:22+00:00"
+         },
+         {
+             "name": "symfony/debug",
+-            "version": "v2.8.16",
++            "version": "v3.2.4",
+             "source": {
+                 "type": "git",
+                 "url": "https://github.com/symfony/debug.git",
+-                "reference": "567681e2c4e5431704e884e4be25a95fd900770f"
++                "reference": "9b98854cb45bc59d100b7d4cc4cf9e05f21026b9"
+             },
+             "dist": {
+                 "type": "zip",
+-                "url": "https://api.github.com/repos/symfony/debug/zipball/567681e2c4e5431704e884e4be25a95fd900770f",
+-                "reference": "567681e2c4e5431704e884e4be25a95fd900770f",
++                "url": "https://api.github.com/repos/symfony/debug/zipball/9b98854cb45bc59d100b7d4cc4cf9e05f21026b9",
++                "reference": "9b98854cb45bc59d100b7d4cc4cf9e05f21026b9",
+                 "shasum": ""
+             },
+             "require": {
+-                "php": ">=5.3.9",
++                "php": ">=5.5.9",
+                 "psr/log": "~1.0"
+             },
+             "conflict": {
+                 "symfony/http-kernel": ">=2.3,<2.3.24|~2.4.0|>=2.5,<2.5.9|>=2.6,<2.6.2"
+             },
+             "require-dev": {
+-                "symfony/class-loader": "~2.2|~3.0.0",
+-                "symfony/http-kernel": "~2.3.24|~2.5.9|~2.6,>=2.6.2|~3.0.0"
++                "symfony/class-loader": "~2.8|~3.0",
++                "symfony/http-kernel": "~2.8|~3.0"
+             },
+             "type": "library",
+             "extra": {
+                 "branch-alias": {
+-                    "dev-master": "2.8-dev"
++                    "dev-master": "3.2-dev"
+                 }
+             },
+             "autoload": {
+@@ -2177,32 +2357,32 @@
+             ],
+             "description": "Symfony Debug Component",
+             "homepage": "https://symfony.com",
+-            "time": "2017-01-02T20:30:24+00:00"
++            "time": "2017-02-16T16:34:18+00:00"
+         },
+         {
+             "name": "symfony/dependency-injection",
+-            "version": "v2.8.16",
++            "version": "v3.2.4",
+             "source": {
+                 "type": "git",
+                 "url": "https://github.com/symfony/dependency-injection.git",
+-                "reference": "b75356611675364607d697f314850d9d870a84aa"
++                "reference": "130aa55b8ed7e6d0d75b0ed37256cec687a22f41"
+             },
+             "dist": {
+                 "type": "zip",
+-                "url": "https://api.github.com/repos/symfony/dependency-injection/zipball/b75356611675364607d697f314850d9d870a84aa",
+-                "reference": "b75356611675364607d697f314850d9d870a84aa",
++                "url": "https://api.github.com/repos/symfony/dependency-injection/zipball/130aa55b8ed7e6d0d75b0ed37256cec687a22f41",
++                "reference": "130aa55b8ed7e6d0d75b0ed37256cec687a22f41",
+                 "shasum": ""
+             },
+             "require": {
+-                "php": ">=5.3.9"
++                "php": ">=5.5.9"
+             },
+             "conflict": {
+-                "symfony/expression-language": "<2.6"
++                "symfony/yaml": "<3.2"
+             },
+             "require-dev": {
+-                "symfony/config": "~2.2|~3.0.0",
+-                "symfony/expression-language": "~2.6|~3.0.0",
+-                "symfony/yaml": "~2.3.42|~2.7.14|~2.8.7|~3.0.7"
++                "symfony/config": "~2.8|~3.0",
++                "symfony/expression-language": "~2.8|~3.0",
++                "symfony/yaml": "~3.2"
+             },
+             "suggest": {
+                 "symfony/config": "",
+@@ -2213,7 +2393,7 @@
+             "type": "library",
+             "extra": {
+                 "branch-alias": {
+-                    "dev-master": "2.8-dev"
++                    "dev-master": "3.2-dev"
+                 }
+             },
+             "autoload": {
+@@ -2240,28 +2420,28 @@
+             ],
+             "description": "Symfony DependencyInjection Component",
+             "homepage": "https://symfony.com",
+-            "time": "2017-01-10T14:27:01+00:00"
++            "time": "2017-02-16T22:46:52+00:00"
+         },
+         {
+             "name": "symfony/dom-crawler",
+-            "version": "v2.8.16",
++            "version": "v3.2.4",
+             "source": {
+                 "type": "git",
+                 "url": "https://github.com/symfony/dom-crawler.git",
+-                "reference": "52cc211afa9458c0a54c478010a55f44892c1c02"
++                "reference": "b814b41373fc4e535aff8c765abe39545216f391"
+             },
+             "dist": {
+                 "type": "zip",
+-                "url": "https://api.github.com/repos/symfony/dom-crawler/zipball/52cc211afa9458c0a54c478010a55f44892c1c02",
+-                "reference": "52cc211afa9458c0a54c478010a55f44892c1c02",
++                "url": "https://api.github.com/repos/symfony/dom-crawler/zipball/b814b41373fc4e535aff8c765abe39545216f391",
++                "reference": "b814b41373fc4e535aff8c765abe39545216f391",
+                 "shasum": ""
+             },
+             "require": {
+-                "php": ">=5.3.9",
++                "php": ">=5.5.9",
+                 "symfony/polyfill-mbstring": "~1.0"
+             },
+             "require-dev": {
+-                "symfony/css-selector": "~2.8|~3.0.0"
++                "symfony/css-selector": "~2.8|~3.0"
+             },
+             "suggest": {
+                 "symfony/css-selector": ""
+@@ -2269,7 +2449,7 @@
+             "type": "library",
+             "extra": {
+                 "branch-alias": {
+-                    "dev-master": "2.8-dev"
++                    "dev-master": "3.2-dev"
+                 }
+             },
+             "autoload": {
+@@ -2296,31 +2476,31 @@
+             ],
+             "description": "Symfony DomCrawler Component",
+             "homepage": "https://symfony.com",
+-            "time": "2017-01-02T20:30:24+00:00"
++            "time": "2017-01-21T17:14:11+00:00"
+         },
+         {
+             "name": "symfony/event-dispatcher",
+-            "version": "v2.8.16",
++            "version": "v3.2.4",
+             "source": {
+                 "type": "git",
+                 "url": "https://github.com/symfony/event-dispatcher.git",
+-                "reference": "74877977f90fb9c3e46378d5764217c55f32df34"
++                "reference": "9137eb3a3328e413212826d63eeeb0217836e2b6"
+             },
+             "dist": {
+                 "type": "zip",
+-                "url": "https://api.github.com/repos/symfony/event-dispatcher/zipball/74877977f90fb9c3e46378d5764217c55f32df34",
+-                "reference": "74877977f90fb9c3e46378d5764217c55f32df34",
++                "url": "https://api.github.com/repos/symfony/event-dispatcher/zipball/9137eb3a3328e413212826d63eeeb0217836e2b6",
++                "reference": "9137eb3a3328e413212826d63eeeb0217836e2b6",
+                 "shasum": ""
+             },
+             "require": {
+-                "php": ">=5.3.9"
++                "php": ">=5.5.9"
+             },
+             "require-dev": {
+                 "psr/log": "~1.0",
+-                "symfony/config": "~2.0,>=2.0.5|~3.0.0",
+-                "symfony/dependency-injection": "~2.6|~3.0.0",
+-                "symfony/expression-language": "~2.6|~3.0.0",
+-                "symfony/stopwatch": "~2.3|~3.0.0"
++                "symfony/config": "~2.8|~3.0",
++                "symfony/dependency-injection": "~2.8|~3.0",
++                "symfony/expression-language": "~2.8|~3.0",
++                "symfony/stopwatch": "~2.8|~3.0"
+             },
+             "suggest": {
+                 "symfony/dependency-injection": "",
+@@ -2329,7 +2509,7 @@
+             "type": "library",
+             "extra": {
+                 "branch-alias": {
+-                    "dev-master": "2.8-dev"
++                    "dev-master": "3.2-dev"
+                 }
+             },
+             "autoload": {
+@@ -2356,29 +2536,29 @@
+             ],
+             "description": "Symfony EventDispatcher Component",
+             "homepage": "https://symfony.com",
+-            "time": "2017-01-02T20:30:24+00:00"
++            "time": "2017-01-02T20:32:22+00:00"
+         },
+         {
+             "name": "symfony/filesystem",
+-            "version": "v2.8.16",
++            "version": "v3.2.4",
+             "source": {
+                 "type": "git",
+                 "url": "https://github.com/symfony/filesystem.git",
+-                "reference": "5b77d49ab76e5b12743b359ef4b4a712e6f5360d"
++                "reference": "a0c6ef2dc78d33b58d91d3a49f49797a184d06f4"
+             },
+             "dist": {
+                 "type": "zip",
+-                "url": "https://api.github.com/repos/symfony/filesystem/zipball/5b77d49ab76e5b12743b359ef4b4a712e6f5360d",
+-                "reference": "5b77d49ab76e5b12743b359ef4b4a712e6f5360d",
++                "url": "https://api.github.com/repos/symfony/filesystem/zipball/a0c6ef2dc78d33b58d91d3a49f49797a184d06f4",
++                "reference": "a0c6ef2dc78d33b58d91d3a49f49797a184d06f4",
+                 "shasum": ""
+             },
+             "require": {
+-                "php": ">=5.3.9"
++                "php": ">=5.5.9"
+             },
+             "type": "library",
+             "extra": {
+                 "branch-alias": {
+-                    "dev-master": "2.8-dev"
++                    "dev-master": "3.2-dev"
+                 }
+             },
+             "autoload": {
+@@ -2405,60 +2585,7 @@
+             ],
+             "description": "Symfony Filesystem Component",
+             "homepage": "https://symfony.com",
+-            "time": "2017-01-08T20:43:03+00:00"
+-        },
+-        {
+-            "name": "symfony/polyfill-apcu",
+-            "version": "v1.3.0",
+-            "source": {
+-                "type": "git",
+-                "url": "https://github.com/symfony/polyfill-apcu.git",
+-                "reference": "5d4474f447403c3348e37b70acc2b95475b7befa"
+-            },
+-            "dist": {
+-                "type": "zip",
+-                "url": "https://api.github.com/repos/symfony/polyfill-apcu/zipball/5d4474f447403c3348e37b70acc2b95475b7befa",
+-                "reference": "5d4474f447403c3348e37b70acc2b95475b7befa",
+-                "shasum": ""
+-            },
+-            "require": {
+-                "php": ">=5.3.3"
+-            },
+-            "type": "library",
+-            "extra": {
+-                "branch-alias": {
+-                    "dev-master": "1.3-dev"
+-                }
+-            },
+-            "autoload": {
+-                "files": [
+-                    "bootstrap.php"
+-                ]
+-            },
+-            "notification-url": "https://packagist.org/downloads/",
+-            "license": [
+-                "MIT"
+-            ],
+-            "authors": [
+-                {
+-                    "name": "Nicolas Grekas",
+-                    "email": "p@tchwork.com"
+-                },
+-                {
+-                    "name": "Symfony Community",
+-                    "homepage": "https://symfony.com/contributors"
+-                }
+-            ],
+-            "description": "Symfony polyfill backporting apcu_* functions to lower PHP versions",
+-            "homepage": "https://symfony.com",
+-            "keywords": [
+-                "apcu",
+-                "compatibility",
+-                "polyfill",
+-                "portable",
+-                "shim"
+-            ],
+-            "time": "2016-11-14T01:06:16+00:00"
++            "time": "2017-01-08T20:47:33+00:00"
+         },
+         {
+             "name": "symfony/polyfill-mbstring",
+@@ -2521,16 +2648,16 @@
+         },
+         {
+             "name": "symfony/process",
+-            "version": "v2.8.16",
++            "version": "v2.8.17",
+             "source": {
+                 "type": "git",
+                 "url": "https://github.com/symfony/process.git",
+-                "reference": "ebb3c2abe0940a703f08e0cbe373f62d97d40231"
++                "reference": "0110ac49348d14eced7d3278ea7485f22196932e"
+             },
+             "dist": {
+                 "type": "zip",
+-                "url": "https://api.github.com/repos/symfony/process/zipball/ebb3c2abe0940a703f08e0cbe373f62d97d40231",
+-                "reference": "ebb3c2abe0940a703f08e0cbe373f62d97d40231",
++                "url": "https://api.github.com/repos/symfony/process/zipball/0110ac49348d14eced7d3278ea7485f22196932e",
++                "reference": "0110ac49348d14eced7d3278ea7485f22196932e",
+                 "shasum": ""
+             },
+             "require": {
+@@ -2566,34 +2693,34 @@
+             ],
+             "description": "Symfony Process Component",
+             "homepage": "https://symfony.com",
+-            "time": "2017-01-02T20:30:24+00:00"
++            "time": "2017-02-03T12:08:06+00:00"
+         },
+         {
+             "name": "symfony/translation",
+-            "version": "v2.8.16",
++            "version": "v3.2.4",
+             "source": {
+                 "type": "git",
+                 "url": "https://github.com/symfony/translation.git",
+-                "reference": "b4ac4a393f6970cc157fba17be537380de396a86"
++                "reference": "d6825c6bb2f1da13f564678f9f236fe8242c0029"
+             },
+             "dist": {
+                 "type": "zip",
+-                "url": "https://api.github.com/repos/symfony/translation/zipball/b4ac4a393f6970cc157fba17be537380de396a86",
+-                "reference": "b4ac4a393f6970cc157fba17be537380de396a86",
++                "url": "https://api.github.com/repos/symfony/translation/zipball/d6825c6bb2f1da13f564678f9f236fe8242c0029",
++                "reference": "d6825c6bb2f1da13f564678f9f236fe8242c0029",
+                 "shasum": ""
+             },
+             "require": {
+-                "php": ">=5.3.9",
++                "php": ">=5.5.9",
+                 "symfony/polyfill-mbstring": "~1.0"
+             },
+             "conflict": {
+-                "symfony/config": "<2.7"
++                "symfony/config": "<2.8"
+             },
+             "require-dev": {
+                 "psr/log": "~1.0",
+-                "symfony/config": "~2.8",
+-                "symfony/intl": "~2.4|~3.0.0",
+-                "symfony/yaml": "~2.2|~3.0.0"
++                "symfony/config": "~2.8|~3.0",
++                "symfony/intl": "~2.8|~3.0",
++                "symfony/yaml": "~2.8|~3.0"
+             },
+             "suggest": {
+                 "psr/log": "To use logging capability in translator",
+@@ -2603,7 +2730,7 @@
+             "type": "library",
+             "extra": {
+                 "branch-alias": {
+-                    "dev-master": "2.8-dev"
++                    "dev-master": "3.2-dev"
+                 }
+             },
+             "autoload": {
+@@ -2630,29 +2757,35 @@
+             ],
+             "description": "Symfony Translation Component",
+             "homepage": "https://symfony.com",
+-            "time": "2017-01-02T20:30:24+00:00"
++            "time": "2017-02-16T22:46:52+00:00"
+         },
+         {
+             "name": "symfony/yaml",
+-            "version": "v2.8.16",
++            "version": "v3.2.4",
+             "source": {
+                 "type": "git",
+                 "url": "https://github.com/symfony/yaml.git",
+-                "reference": "dbe61fed9cd4a44c5b1d14e5e7b1a8640cfb2bf2"
++                "reference": "9724c684646fcb5387d579b4bfaa63ee0b0c64c8"
+             },
+             "dist": {
+                 "type": "zip",
+-                "url": "https://api.github.com/repos/symfony/yaml/zipball/dbe61fed9cd4a44c5b1d14e5e7b1a8640cfb2bf2",
+-                "reference": "dbe61fed9cd4a44c5b1d14e5e7b1a8640cfb2bf2",
++                "url": "https://api.github.com/repos/symfony/yaml/zipball/9724c684646fcb5387d579b4bfaa63ee0b0c64c8",
++                "reference": "9724c684646fcb5387d579b4bfaa63ee0b0c64c8",
+                 "shasum": ""
+             },
+             "require": {
+-                "php": ">=5.3.9"
++                "php": ">=5.5.9"
++            },
++            "require-dev": {
++                "symfony/console": "~2.8|~3.0"
++            },
++            "suggest": {
++                "symfony/console": "For validating YAML files using the lint command"
+             },
+             "type": "library",
+             "extra": {
+                 "branch-alias": {
+-                    "dev-master": "2.8-dev"
++                    "dev-master": "3.2-dev"
+                 }
+             },
+             "autoload": {
+@@ -2679,7 +2812,57 @@
+             ],
+             "description": "Symfony Yaml Component",
+             "homepage": "https://symfony.com",
+-            "time": "2017-01-03T13:49:52+00:00"
++            "time": "2017-02-16T22:46:52+00:00"
++        },
++        {
++            "name": "webmozart/assert",
++            "version": "1.2.0",
++            "source": {
++                "type": "git",
++                "url": "https://github.com/webmozart/assert.git",
++                "reference": "2db61e59ff05fe5126d152bd0655c9ea113e550f"
++            },
++            "dist": {
++                "type": "zip",
++                "url": "https://api.github.com/repos/webmozart/assert/zipball/2db61e59ff05fe5126d152bd0655c9ea113e550f",
++                "reference": "2db61e59ff05fe5126d152bd0655c9ea113e550f",
++                "shasum": ""
++            },
++            "require": {
++                "php": "^5.3.3 || ^7.0"
++            },
++            "require-dev": {
++                "phpunit/phpunit": "^4.6",
++                "sebastian/version": "^1.0.1"
++            },
++            "type": "library",
++            "extra": {
++                "branch-alias": {
++                    "dev-master": "1.3-dev"
++                }
++            },
++            "autoload": {
++                "psr-4": {
++                    "Webmozart\\Assert\\": "src/"
++                }
++            },
++            "notification-url": "https://packagist.org/downloads/",
++            "license": [
++                "MIT"
++            ],
++            "authors": [
++                {
++                    "name": "Bernhard Schussek",
++                    "email": "bschussek@gmail.com"
++                }
++            ],
++            "description": "Assertions to validate method input/output with nice error messages.",
++            "keywords": [
++                "assert",
++                "check",
++                "validate"
++            ],
++            "time": "2016-11-23T20:04:58+00:00"
+         }
+     ],
+     "aliases": [],
+diff --git a/lib/filestorage/file_storage.php b/lib/filestorage/file_storage.php
+index c8020e9411b..482d90fe229 100644
+--- a/lib/filestorage/file_storage.php
++++ b/lib/filestorage/file_storage.php
+@@ -43,16 +43,13 @@ require_once("$CFG->libdir/filestorage/stored_file.php");
+  * @since     Moodle 2.0
+  */
+ class file_storage {
+-    /** @var string Directory with file contents */
+-    private $filedir;
+-    /** @var string Contents of deleted files not needed any more */
+-    private $trashdir;
++
+     /** @var string tempdir */
+     private $tempdir;
+-    /** @var int Permissions for new directories */
+-    private $dirpermissions;
+-    /** @var int Permissions for new files */
+-    private $filepermissions;
++
++    /** @var file_system filesystem */
++    private $filesystem;
++
+     /** @var array List of formats supported by unoconv */
+     private $unoconvformats;
+ 
+@@ -74,43 +71,46 @@ class file_storage {
+     /** Any other error */
+     const UNOCONVPATH_ERROR = 'error';
+ 
+-
+     /**
+      * Constructor - do not use directly use {@link get_file_storage()} call instead.
+-     *
+-     * @param string $filedir full path to pool directory
+-     * @param string $trashdir temporary storage of deleted area
+-     * @param string $tempdir temporary storage of various files
+-     * @param int $dirpermissions new directory permissions
+-     * @param int $filepermissions new file permissions
+      */
+-    public function __construct($filedir, $trashdir, $tempdir, $dirpermissions, $filepermissions) {
+-        global $CFG;
++    public function __construct() {
++        // The tempdir must always remain on disk, but shared between all ndoes in a cluster. Its content is not subject
++        // to the file_system abstraction.
++        $this->tempdir = make_temp_directory('filestorage');
+ 
+-        $this->filedir         = $filedir;
+-        $this->trashdir        = $trashdir;
+-        $this->tempdir         = $tempdir;
+-        $this->dirpermissions  = $dirpermissions;
+-        $this->filepermissions = $filepermissions;
++        $this->setup_file_system();
++    }
+ 
+-        // make sure the file pool directory exists
+-        if (!is_dir($this->filedir)) {
+-            if (!mkdir($this->filedir, $this->dirpermissions, true)) {
+-                throw new file_exception('storedfilecannotcreatefiledirs'); // permission trouble
+-            }
+-            // place warning file in file pool root
+-            if (!file_exists($this->filedir.'/warning.txt')) {
+-                file_put_contents($this->filedir.'/warning.txt',
+-                                  'This directory contains the content of uploaded files and is controlled by Moodle code. Do not manually move, change or rename any of the files and subdirectories here.');
+-                chmod($this->filedir.'/warning.txt', $CFG->filepermissions);
+-            }
+-        }
+-        // make sure the file pool directory exists
+-        if (!is_dir($this->trashdir)) {
+-            if (!mkdir($this->trashdir, $this->dirpermissions, true)) {
+-                throw new file_exception('storedfilecannotcreatefiledirs'); // permission trouble
++    /**
++     * Complete setup procedure for the file_system component.
++     *
++     * @return file_system
++     */
++    public function setup_file_system() {
++        global $CFG;
++        if ($this->filesystem === null) {
++            require_once($CFG->libdir . '/filestorage/file_system.php');
++            if (!empty($CFG->alternative_file_system_class)) {
++                $class = $CFG->alternative_file_system_class;
++            } else {
++                // The default file_system is the filedir.
++                require_once($CFG->libdir . '/filestorage/file_system_filedir.php');
++                $class = file_system_filedir::class;
+             }
++            $this->filesystem = new $class();
+         }
++
++        return $this->filesystem;
++    }
++
++    /**
++     * Return the file system instance.
++     *
++     * @return file_system
++     */
++    public function get_file_system() {
++        return $this->filesystem;
+     }
+ 
+     /**
+@@ -173,7 +173,7 @@ class file_storage {
+      * @return stored_file instance of file abstraction class
+      */
+     public function get_file_instance(stdClass $filerecord) {
+-        $storedfile = new stored_file($this, $filerecord, $this->filedir);
++        $storedfile = new stored_file($this, $filerecord);
+         return $storedfile;
+     }
+ 
+@@ -1478,7 +1478,7 @@ class file_storage {
+             $newrecord->id = $DB->insert_record('files', $newrecord);
+         } catch (dml_exception $e) {
+             if ($newfile) {
+-                $this->deleted_file_cleanup($newrecord->contenthash);
++                $this->move_to_trash($newrecord->contenthash);
+             }
+             throw new stored_file_creation_exception($newrecord->contextid, $newrecord->component, $newrecord->filearea, $newrecord->itemid,
+                                                     $newrecord->filepath, $newrecord->filename, $e->debuginfo);
+@@ -1585,9 +1585,11 @@ class file_storage {
+         $newrecord->sortorder    = $filerecord->sortorder;
+ 
+         list($newrecord->contenthash, $newrecord->filesize, $newfile) = $this->add_string_to_pool($content);
+-        $filepathname = $this->path_from_hash($newrecord->contenthash) . '/' . $newrecord->contenthash;
+-        // get mimetype by magic bytes
+-        $newrecord->mimetype = empty($filerecord->mimetype) ? $this->mimetype($filepathname, $filerecord->filename) : $filerecord->mimetype;
++        if (empty($filerecord->mimetype)) {
++            $newrecord->mimetype = $this->filesystem->mimetype_from_hash($newrecord->contenthash, $newrecord->filename);
++        } else {
++            $newrecord->mimetype = $filerecord->mimetype;
++        }
+ 
+         $newrecord->pathnamehash = $this->get_pathname_hash($newrecord->contextid, $newrecord->component, $newrecord->filearea, $newrecord->itemid, $newrecord->filepath, $newrecord->filename);
+ 
+@@ -1595,7 +1597,7 @@ class file_storage {
+             $newrecord->id = $DB->insert_record('files', $newrecord);
+         } catch (dml_exception $e) {
+             if ($newfile) {
+-                $this->deleted_file_cleanup($newrecord->contenthash);
++                $this->move_to_trash($newrecord->contenthash);
+             }
+             throw new stored_file_creation_exception($newrecord->contextid, $newrecord->component, $newrecord->filearea, $newrecord->itemid,
+                                                     $newrecord->filepath, $newrecord->filename, $e->debuginfo);
+@@ -1699,16 +1701,19 @@ class file_storage {
+             throw new file_reference_exception($repositoryid, $reference, null, null, $e->getMessage());
+         }
+ 
+-        if (isset($filerecord->contenthash) && $this->content_exists($filerecord->contenthash)) {
+-            // there was specified the contenthash for a file already stored in moodle filepool
++        $existingfile = null;
++        if (isset($filerecord->contenthash)) {
++            $existingfile = $DB->get_record('files', array('contenthash' => $filerecord->contenthash));
++        }
++        if (!empty($existingfile)) {
++            // There is an existing file already available.
+             if (empty($filerecord->filesize)) {
+-                $filepathname = $this->path_from_hash($filerecord->contenthash) . '/' . $filerecord->contenthash;
+-                $filerecord->filesize = filesize($filepathname);
++                $filerecord->filesize = $existingfile->filesize;
+             } else {
+                 $filerecord->filesize = clean_param($filerecord->filesize, PARAM_INT);
+             }
+         } else {
+-            // atempt to get the result of last synchronisation for this reference
++            // Attempt to get the result of last synchronisation for this reference.
+             $lastcontent = $DB->get_record('files', array('referencefileid' => $filerecord->referencefileid),
+                     'id, contenthash, filesize', IGNORE_MULTIPLE);
+             if ($lastcontent) {
+@@ -1727,7 +1732,7 @@ class file_storage {
+             $filerecord->id = $DB->insert_record('files', $filerecord);
+         } catch (dml_exception $e) {
+             if (!empty($newfile)) {
+-                $this->deleted_file_cleanup($filerecord->contenthash);
++                $this->move_to_trash($filerecord->contenthash);
+             }
+             throw new stored_file_creation_exception($filerecord->contextid, $filerecord->component, $filerecord->filearea, $filerecord->itemid,
+                                                     $filerecord->filepath, $filerecord->filename, $e->debuginfo);
+@@ -1910,99 +1915,7 @@ class file_storage {
+      * @return array (contenthash, filesize, newfile)
+      */
+     public function add_file_to_pool($pathname, $contenthash = NULL) {
+-        global $CFG;
+-
+-        if (!is_readable($pathname)) {
+-            throw new file_exception('storedfilecannotread', '', $pathname);
+-        }
+-
+-        $filesize = filesize($pathname);
+-        if ($filesize === false) {
+-            throw new file_exception('storedfilecannotread', '', $pathname);
+-        }
+-
+-        if (is_null($contenthash)) {
+-            $contenthash = sha1_file($pathname);
+-        } else if ($CFG->debugdeveloper) {
+-            $filehash = sha1_file($pathname);
+-            if ($filehash === false) {
+-                throw new file_exception('storedfilecannotread', '', $pathname);
+-            }
+-            if ($filehash !== $contenthash) {
+-                // Hopefully this never happens, if yes we need to fix calling code.
+-                debugging("Invalid contenthash submitted for file $pathname", DEBUG_DEVELOPER);
+-                $contenthash = $filehash;
+-            }
+-        }
+-        if ($contenthash === false) {
+-            throw new file_exception('storedfilecannotread', '', $pathname);
+-        }
+-
+-        if ($filesize > 0 and $contenthash === sha1('')) {
+-            // Did the file change or is sha1_file() borked for this file?
+-            clearstatcache();
+-            $contenthash = sha1_file($pathname);
+-            $filesize = filesize($pathname);
+-
+-            if ($contenthash === false or $filesize === false) {
+-                throw new file_exception('storedfilecannotread', '', $pathname);
+-            }
+-            if ($filesize > 0 and $contenthash === sha1('')) {
+-                // This is very weird...
+-                throw new file_exception('storedfilecannotread', '', $pathname);
+-            }
+-        }
+-
+-        $hashpath = $this->path_from_hash($contenthash);
+-        $hashfile = "$hashpath/$contenthash";
+-
+-        $newfile = true;
+-
+-        if (file_exists($hashfile)) {
+-            if (filesize($hashfile) === $filesize) {
+-                return array($contenthash, $filesize, false);
+-            }
+-            if (sha1_file($hashfile) === $contenthash) {
+-                // Jackpot! We have a sha1 collision.
+-                mkdir("$this->filedir/jackpot/", $this->dirpermissions, true);
+-                copy($pathname, "$this->filedir/jackpot/{$contenthash}_1");
+-                copy($hashfile, "$this->filedir/jackpot/{$contenthash}_2");
+-                throw new file_pool_content_exception($contenthash);
+-            }
+-            debugging("Replacing invalid content file $contenthash");
+-            unlink($hashfile);
+-            $newfile = false;
+-        }
+-
+-        if (!is_dir($hashpath)) {
+-            if (!mkdir($hashpath, $this->dirpermissions, true)) {
+-                // Permission trouble.
+-                throw new file_exception('storedfilecannotcreatefiledirs');
+-            }
+-        }
+-
+-        // Let's try to prevent some race conditions.
+-
+-        $prev = ignore_user_abort(true);
+-        @unlink($hashfile.'.tmp');
+-        if (!copy($pathname, $hashfile.'.tmp')) {
+-            // Borked permissions or out of disk space.
+-            @unlink($hashfile.'.tmp');
+-            ignore_user_abort($prev);
+-            throw new file_exception('storedfilecannotcreatefile');
+-        }
+-        if (sha1_file($hashfile.'.tmp') !== $contenthash) {
+-            // Highly unlikely edge case, but this can happen on an NFS volume with no space remaining.
+-            @unlink($hashfile.'.tmp');
+-            ignore_user_abort($prev);
+-            throw new file_exception('storedfilecannotcreatefile');
+-        }
+-        rename($hashfile.'.tmp', $hashfile);
+-        chmod($hashfile, $this->filepermissions); // Fix permissions if needed.
+-        @unlink($hashfile.'.tmp'); // Just in case anything fails in a weird way.
+-        ignore_user_abort($prev);
+-
+-        return array($contenthash, $filesize, $newfile);
++        return $this->filesystem->add_file_from_path($pathname, $contenthash);
+     }
+ 
+     /**
+@@ -2012,66 +1925,7 @@ class file_storage {
+      * @return array (contenthash, filesize, newfile)
+      */
+     public function add_string_to_pool($content) {
+-        global $CFG;
+-
+-        $contenthash = sha1($content);
+-        $filesize = strlen($content); // binary length
+-
+-        $hashpath = $this->path_from_hash($contenthash);
+-        $hashfile = "$hashpath/$contenthash";
+-
+-        $newfile = true;
+-
+-        if (file_exists($hashfile)) {
+-            if (filesize($hashfile) === $filesize) {
+-                return array($contenthash, $filesize, false);
+-            }
+-            if (sha1_file($hashfile) === $contenthash) {
+-                // Jackpot! We have a sha1 collision.
+-                mkdir("$this->filedir/jackpot/", $this->dirpermissions, true);
+-                copy($hashfile, "$this->filedir/jackpot/{$contenthash}_1");
+-                file_put_contents("$this->filedir/jackpot/{$contenthash}_2", $content);
+-                throw new file_pool_content_exception($contenthash);
+-            }
+-            debugging("Replacing invalid content file $contenthash");
+-            unlink($hashfile);
+-            $newfile = false;
+-        }
+-
+-        if (!is_dir($hashpath)) {
+-            if (!mkdir($hashpath, $this->dirpermissions, true)) {
+-                // Permission trouble.
+-                throw new file_exception('storedfilecannotcreatefiledirs');
+-            }
+-        }
+-
+-        // Hopefully this works around most potential race conditions.
+-
+-        $prev = ignore_user_abort(true);
+-
+-        if (!empty($CFG->preventfilelocking)) {
+-            $newsize = file_put_contents($hashfile.'.tmp', $content);
+-        } else {
+-            $newsize = file_put_contents($hashfile.'.tmp', $content, LOCK_EX);
+-        }
+-
+-        if ($newsize === false) {
+-            // Borked permissions most likely.
+-            ignore_user_abort($prev);
+-            throw new file_exception('storedfilecannotcreatefile');
+-        }
+-        if (filesize($hashfile.'.tmp') !== $filesize) {
+-            // Out of disk space?
+-            unlink($hashfile.'.tmp');
+-            ignore_user_abort($prev);
+-            throw new file_exception('storedfilecannotcreatefile');
+-        }
+-        rename($hashfile.'.tmp', $hashfile);
+-        chmod($hashfile, $this->filepermissions); // Fix permissions if needed.
+-        @unlink($hashfile.'.tmp'); // Just in case anything fails in a weird way.
+-        ignore_user_abort($prev);
+-
+-        return array($contenthash, $filesize, $newfile);
++        return $this->filesystem->add_file_from_string($content);
+     }
+ 
+     /**
+@@ -2083,11 +1937,7 @@ class file_storage {
+      * @return bool success
+      */
+     public function xsendfile($contenthash) {
+-        global $CFG;
+-        require_once("$CFG->libdir/xsendfilelib.php");
+-
+-        $hashpath = $this->path_from_hash($contenthash);
+-        return xsendfile("$hashpath/$contenthash");
++        return $this->filesystem->xsendfile($contenthash);
+     }
+ 
+     /**
+@@ -2095,39 +1945,12 @@ class file_storage {
+      *
+      * @param string $contenthash
+      * @return bool
++     * @deprecated since 3.3
+      */
+     public function content_exists($contenthash) {
+-        $dir = $this->path_from_hash($contenthash);
+-        $filepath = $dir . '/' . $contenthash;
+-        return file_exists($filepath);
+-    }
++        debugging('The content_exists function has been deprecated and should no longer be used.', DEBUG_DEVELOPER);
+ 
+-    /**
+-     * Return path to file with given hash.
+-     *
+-     * NOTE: must not be public, files in pool must not be modified
+-     *
+-     * @param string $contenthash content hash
+-     * @return string expected file location
+-     */
+-    protected function path_from_hash($contenthash) {
+-        $l1 = $contenthash[0].$contenthash[1];
+-        $l2 = $contenthash[2].$contenthash[3];
+-        return "$this->filedir/$l1/$l2";
+-    }
+-
+-    /**
+-     * Return path to file with given hash.
+-     *
+-     * NOTE: must not be public, files in pool must not be modified
+-     *
+-     * @param string $contenthash content hash
+-     * @return string expected file location
+-     */
+-    protected function trash_path_from_hash($contenthash) {
+-        $l1 = $contenthash[0].$contenthash[1];
+-        $l2 = $contenthash[2].$contenthash[3];
+-        return "$this->trashdir/$l1/$l2";
++        return false;
+     }
+ 
+     /**
+@@ -2135,74 +1958,12 @@ class file_storage {
+      *
+      * @param stored_file $file stored_file instance
+      * @return bool success
++     * @deprecated since 3.3
+      */
+     public function try_content_recovery($file) {
+-        $contenthash = $file->get_contenthash();
+-        $trashfile = $this->trash_path_from_hash($contenthash).'/'.$contenthash;
+-        if (!is_readable($trashfile)) {
+-            if (!is_readable($this->trashdir.'/'.$contenthash)) {
+-                return false;
+-            }
+-            // nice, at least alternative trash file in trash root exists
+-            $trashfile = $this->trashdir.'/'.$contenthash;
+-        }
+-        if (filesize($trashfile) != $file->get_filesize() or sha1_file($trashfile) != $contenthash) {
+-            //weird, better fail early
+-            return false;
+-        }
+-        $contentdir  = $this->path_from_hash($contenthash);
+-        $contentfile = $contentdir.'/'.$contenthash;
+-        if (file_exists($contentfile)) {
+-            //strange, no need to recover anything
+-            return true;
+-        }
+-        if (!is_dir($contentdir)) {
+-            if (!mkdir($contentdir, $this->dirpermissions, true)) {
+-                return false;
+-            }
+-        }
+-        return rename($trashfile, $contentfile);
+-    }
++        debugging('The try_content_recovery function has been deprecated and should no longer be used.', DEBUG_DEVELOPER);
+ 
+-    /**
+-     * Marks pool file as candidate for deleting.
+-     *
+-     * DO NOT call directly - reserved for core!!
+-     *
+-     * @param string $contenthash
+-     */
+-    public function deleted_file_cleanup($contenthash) {
+-        global $DB;
+-
+-        if ($contenthash === sha1('')) {
+-            // No need to delete empty content file with sha1('') content hash.
+-            return;
+-        }
+-
+-        //Note: this section is critical - in theory file could be reused at the same
+-        //      time, if this happens we can still recover the file from trash
+-        if ($DB->record_exists('files', array('contenthash'=>$contenthash))) {
+-            // file content is still used
+-            return;
+-        }
+-        //move content file to trash
+-        $contentfile = $this->path_from_hash($contenthash).'/'.$contenthash;
+-        if (!file_exists($contentfile)) {
+-            //weird, but no problem
+-            return;
+-        }
+-        $trashpath = $this->trash_path_from_hash($contenthash);
+-        $trashfile = $trashpath.'/'.$contenthash;
+-        if (file_exists($trashfile)) {
+-            // we already have this content in trash, no need to move it there
+-            unlink($contentfile);
+-            return;
+-        }
+-        if (!is_dir($trashpath)) {
+-            mkdir($trashpath, $this->dirpermissions, true);
+-        }
+-        rename($contentfile, $trashfile);
+-        chmod($trashfile, $this->filepermissions); // fix permissions if needed
++        return false;
+     }
+ 
+     /**
+@@ -2481,27 +2242,46 @@ class file_storage {
+     }
+ 
+     /**
+-     * Return mimetype by given file pathname
++     * Return mimetype by given file pathname.
+      *
+      * If file has a known extension, we return the mimetype based on extension.
+      * Otherwise (when possible) we try to get the mimetype from file contents.
+      *
+-     * @param string $pathname full path to the file
+-     * @param string $filename correct file name with extension, if omitted will be taken from $path
++     * @param string $fullpath Full path to the file on disk
++     * @param string $filename Correct file name with extension, if omitted will be taken from $path
+      * @return string
+      */
+-    public static function mimetype($pathname, $filename = null) {
++    public static function mimetype($fullpath, $filename = null) {
+         if (empty($filename)) {
+-            $filename = $pathname;
++            $filename = $fullpath;
+         }
++
++        // The mimeinfo function determines the mimetype purely based on the file extension.
+         $type = mimeinfo('type', $filename);
+-        if ($type === 'document/unknown' && class_exists('finfo') && file_exists($pathname)) {
+-            $finfo = new finfo(FILEINFO_MIME_TYPE);
+-            $type = mimeinfo_from_type('type', $finfo->file($pathname));
++
++        if ($type === 'document/unknown') {
++            // The type is unknown. Inspect the file now.
++            $type = self::mimetype_from_file($fullpath);
+         }
+         return $type;
+     }
+ 
++    /**
++     * Inspect a file on disk for it's mimetype.
++     *
++     * @param string $fullpath Path to file on disk
++     * @return string The mimetype
++     */
++    public static function mimetype_from_file($fullpath) {
++        if (file_exists($fullpath)) {
++            // The type is unknown. Attempt to look up the file type now.
++            $finfo = new finfo(FILEINFO_MIME_TYPE);
++            return mimeinfo_from_type('type', $finfo->file($fullpath));
++        }
++
++        return 'document/unknown';
++    }
++
+     /**
+      * Cron cleanup job.
+      */
+@@ -2586,10 +2366,9 @@ class file_storage {
+             $rs->close();
+             mtrace('done.');
+ 
+-            mtrace('Deleting trash files... ', '');
++            mtrace('Call filesystem cron tasks.', '');
+             cron_trace_time_and_memory();
+-            fulldelete($this->trashdir);
+-            set_config('fileslastcleanup', time());
++            $this->filesystem->cron();
+             mtrace('done.');
+         }
+     }
+diff --git a/lib/filestorage/stored_file.php b/lib/filestorage/stored_file.php
+index b115f965673..192e7b8daf2 100644
+--- a/lib/filestorage/stored_file.php
++++ b/lib/filestorage/stored_file.php
+@@ -26,6 +26,7 @@
+ defined('MOODLE_INTERNAL') || die();
+ 
+ require_once($CFG->dirroot . '/lib/filestorage/file_progress.php');
++require_once($CFG->dirroot . '/lib/filestorage/file_system.php');
+ 
+ /**
+  * Class representing local files stored in a sha1 file pool.
+@@ -44,10 +45,10 @@ class stored_file {
+     private $fs;
+     /** @var stdClass record from the files table left join files_reference table */
+     private $file_record;
+-    /** @var string location of content files */
+-    private $filedir;
+     /** @var repository repository plugin instance */
+     private $repository;
++    /** @var file_system filesystem instance */
++    private $filesystem;
+ 
+     /**
+      * @var int Indicates a file handle of the type returned by fopen.
+@@ -65,13 +66,12 @@ class stored_file {
+      *
+      * @param file_storage $fs file  storage instance
+      * @param stdClass $file_record description of file
+-     * @param string $filedir location of file directory with sh1 named content files
++     * @param string $deprecated
+      */
+-    public function __construct(file_storage $fs, stdClass $file_record, $filedir) {
++    public function __construct(file_storage $fs, stdClass $file_record, $deprecated = null) {
+         global $DB, $CFG;
+         $this->fs          = $fs;
+         $this->file_record = clone($file_record); // prevent modifications
+-        $this->filedir     = $filedir; // keep secret, do not expose!
+ 
+         if (!empty($file_record->repositoryid)) {
+             require_once("$CFG->dirroot/repository/lib.php");
+@@ -89,6 +89,8 @@ class stored_file {
+                 $this->file_record->$key = null;
+             }
+         }
++
++        $this->filesystem = $fs->get_file_system();
+     }
+ 
+     /**
+@@ -179,15 +181,7 @@ class stored_file {
+             }
+         }
+         // Validate mimetype field
+-        // we don't use {@link stored_file::get_content_file_location()} here becaues it will try to update file_record
+-        $pathname = $this->get_pathname_by_contenthash();
+-        // try to recover the content from trash
+-        if (!is_readable($pathname)) {
+-            if (!$this->fs->try_content_recovery($this) or !is_readable($pathname)) {
+-                throw new file_exception('storedfilecannotread', '', $pathname);
+-            }
+-        }
+-        $mimetype = $this->fs->mimetype($pathname, $this->file_record->filename);
++        $mimetype = $this->filesystem->mimetype_from_storedfile($this);
+         $this->file_record->mimetype = $mimetype;
+ 
+         $DB->update_record('files', $this->file_record);
+@@ -255,8 +249,8 @@ class stored_file {
+         }
+ 
+         $filerecord = new stdClass;
+-        $contenthash = $newfile->get_contenthash();
+-        if ($this->fs->content_exists($contenthash)) {
++        if ($this->filesystem->is_file_readable_remotely_by_storedfile($newfile)) {
++            $contenthash = $newfile->get_contenthash();
+             $filerecord->contenthash = $contenthash;
+         } else {
+             throw new file_exception('storedfileproblem', 'Invalid contenthash, content must be already in filepool', $contenthash);
+@@ -357,40 +351,10 @@ class stored_file {
+         }
+ 
+         // Move pool file to trash if content not needed any more.
+-        $this->fs->deleted_file_cleanup($this->file_record->contenthash);
++        $this->filesystem->remove_file($this->file_record->contenthash);
+         return true; // BC only
+     }
+ 
+-    /**
+-     * Get file pathname by contenthash
+-     *
+-     * NOTE, this function is not calling sync_external_file, it assume the contenthash is current
+-     * Protected - developers must not gain direct access to this function.
+-     *
+-     * @return string full path to pool file with file content
+-     */
+-    protected function get_pathname_by_contenthash() {
+-        // Detect is local file or not.
+-        $contenthash = $this->file_record->contenthash;
+-        $l1 = $contenthash[0].$contenthash[1];
+-        $l2 = $contenthash[2].$contenthash[3];
+-        return "$this->filedir/$l1/$l2/$contenthash";
+-    }
+-
+-    /**
+-     * Get file pathname by given contenthash, this method will try to sync files
+-     *
+-     * Protected - developers must not gain direct access to this function.
+-     *
+-     * NOTE: do not make this public, we must not modify or delete the pool files directly! ;-)
+-     *
+-     * @return string full path to pool file with file content
+-     **/
+-    protected function get_content_file_location() {
+-        $this->sync_external_file();
+-        return $this->get_pathname_by_contenthash();
+-    }
+-
+     /**
+     * adds this file path to a curl request (POST only)
+     *
+@@ -399,13 +363,7 @@ class stored_file {
+     * @return void
+     */
+     public function add_to_curl_request(&$curlrequest, $key) {
+-        if (function_exists('curl_file_create')) {
+-            // As of PHP 5.5, the usage of the @filename API for file uploading is deprecated.
+-            $value = curl_file_create($this->get_content_file_location());
+-        } else {
+-            $value = '@' . $this->get_content_file_location();
+-        }
+-        $curlrequest->_tmp_file_post_params[$key] = $value;
++        return $this->filesystem->add_to_curl_request($this, $curlrequest, $key);
+     }
+ 
+     /**
+@@ -417,35 +375,14 @@ class stored_file {
+      * @return resource file handle
+      */
+     public function get_content_file_handle($type = self::FILE_HANDLE_FOPEN) {
+-        $path = $this->get_content_file_location();
+-        if (!is_readable($path)) {
+-            if (!$this->fs->try_content_recovery($this) or !is_readable($path)) {
+-                throw new file_exception('storedfilecannotread', '', $path);
+-            }
+-        }
+-        switch ($type) {
+-            case self::FILE_HANDLE_FOPEN:
+-                // Binary reading.
+-                return fopen($path, 'rb');
+-            case self::FILE_HANDLE_GZOPEN:
+-                // Binary reading of file in gz format.
+-                return gzopen($path, 'rb');
+-            default:
+-                throw new coding_exception('Unexpected file handle type');
+-        }
++        return $this->filesystem->get_content_file_handle($this, $type);
+     }
+ 
+     /**
+      * Dumps file content to page.
+      */
+     public function readfile() {
+-        $path = $this->get_content_file_location();
+-        if (!is_readable($path)) {
+-            if (!$this->fs->try_content_recovery($this) or !is_readable($path)) {
+-                throw new file_exception('storedfilecannotread', '', $path);
+-            }
+-        }
+-        readfile_allow_large($path, $this->get_filesize());
++        return $this->filesystem->readfile($this);
+     }
+ 
+     /**
+@@ -454,13 +391,7 @@ class stored_file {
+      * @return string content
+      */
+     public function get_content() {
+-        $path = $this->get_content_file_location();
+-        if (!is_readable($path)) {
+-            if (!$this->fs->try_content_recovery($this) or !is_readable($path)) {
+-                throw new file_exception('storedfilecannotread', '', $path);
+-            }
+-        }
+-        return file_get_contents($this->get_content_file_location());
++        return $this->filesystem->get_content($this);
+     }
+ 
+     /**
+@@ -470,13 +401,7 @@ class stored_file {
+      * @return bool success
+      */
+     public function copy_content_to($pathname) {
+-        $path = $this->get_content_file_location();
+-        if (!is_readable($path)) {
+-            if (!$this->fs->try_content_recovery($this) or !is_readable($path)) {
+-                throw new file_exception('storedfilecannotread', '', $path);
+-            }
+-        }
+-        return copy($path, $pathname);
++        return $this->filesystem->copy_content_from_storedfile($this, $pathname);
+     }
+ 
+     /**
+@@ -509,8 +434,7 @@ class stored_file {
+      * @return array of file infos
+      */
+     public function list_files(file_packer $packer) {
+-        $archivefile = $this->get_content_file_location();
+-        return $packer->list_files($archivefile);
++        return $this->filesystem->list_files($this, $packer);
+     }
+ 
+     /**
+@@ -523,8 +447,7 @@ class stored_file {
+      */
+     public function extract_to_pathname(file_packer $packer, $pathname,
+             file_progress $progress = null) {
+-        $archivefile = $this->get_content_file_location();
+-        return $packer->extract_to_pathname($archivefile, $pathname, null, $progress);
++        return $this->filesystem->extract_to_pathname($this, $packer, $pathname, $progress);
+     }
+ 
+     /**
+@@ -542,9 +465,9 @@ class stored_file {
+      */
+     public function extract_to_storage(file_packer $packer, $contextid,
+             $component, $filearea, $itemid, $pathbase, $userid = null, file_progress $progress = null) {
+-        $archivefile = $this->get_content_file_location();
+-        return $packer->extract_to_storage($archivefile, $contextid,
+-                $component, $filearea, $itemid, $pathbase, $userid, $progress);
++
++        return $this->filesystem->extract_to_storage($this, $packer, $contextid, $component, $filearea,
++                $itemid, $pathbase, $userid, $progress);
+     }
+ 
+     /**
+@@ -555,15 +478,7 @@ class stored_file {
+      * @return bool success
+      */
+     public function archive_file(file_archive $filearch, $archivepath) {
+-        if ($this->is_directory()) {
+-            return $filearch->add_directory($archivepath);
+-        } else {
+-            $path = $this->get_content_file_location();
+-            if (!is_readable($path)) {
+-                return false;
+-            }
+-            return $filearch->add_file_from_pathname($archivepath, $path);
+-        }
++        return $this->filesystem->add_storedfile_to_archive($this, $filearch, $archivepath);
+     }
+ 
+     /**
+@@ -573,22 +488,7 @@ class stored_file {
+      * @return mixed array with width, height and mimetype; false if not an image
+      */
+     public function get_imageinfo() {
+-        $path = $this->get_content_file_location();
+-        if (!is_readable($path)) {
+-            if (!$this->fs->try_content_recovery($this) or !is_readable($path)) {
+-                throw new file_exception('storedfilecannotread', '', $path);
+-            }
+-        }
+-        $mimetype = $this->get_mimetype();
+-        if (!preg_match('|^image/|', $mimetype) || !filesize($path) || !($imageinfo = getimagesize($path))) {
+-            return false;
+-        }
+-        $image = array('width'=>$imageinfo[0], 'height'=>$imageinfo[1], 'mimetype'=>image_type_to_mime_type($imageinfo[2]));
+-        if (empty($image['width']) or empty($image['height']) or empty($image['mimetype'])) {
+-            // gd can not parse it, sorry
+-            return false;
+-        }
+-        return $image;
++        return $this->filesystem->get_imageinfo($this);
+     }
+ 
+     /**
+@@ -985,7 +885,7 @@ class stored_file {
+             $this->file_record->timemodified = $timemodified;
+         }
+         if (isset($oldcontenthash)) {
+-            $this->fs->deleted_file_cleanup($oldcontenthash);
++            $this->filesystem->remove_file($oldcontenthash);
+         }
+     }
+ 
+@@ -1051,16 +951,44 @@ class stored_file {
+             return false;
+         }
+ 
++        $content = $this->get_content();
++
+         // Fetch the image information for this image.
+-        $imageinfo = @getimagesizefromstring($this->get_content());
++        $imageinfo = @getimagesizefromstring($content);
+         if (empty($imageinfo)) {
+             return false;
+         }
+ 
+         // Create a new image from the file.
+-        $original = @imagecreatefromstring($this->get_content());
++        $original = @imagecreatefromstring($content);
+ 
+         // Generate the thumbnail.
+         return generate_image_thumbnail_from_image($original, $imageinfo, $width, $height);
+     }
++
++    /**
++     * Generate a resized image for this stored_file.
++     *
++     * @param int|null $width The desired width, or null to only use the height.
++     * @param int|null $height The desired height, or null to only use the width.
++     * @return string|false False when a problem occurs, else the image data.
++     */
++    public function resize_image($width, $height) {
++        global $CFG;
++        require_once($CFG->libdir . '/gdlib.php');
++
++        $content = $this->get_content();
++
++        // Fetch the image information for this image.
++        $imageinfo = @getimagesizefromstring($content);
++        if (empty($imageinfo)) {
++            return false;
++        }
++
++        // Create a new image from the file.
++        $original = @imagecreatefromstring($content);
++
++        // Generate the resized image.
++        return resize_image_from_image($original, $imageinfo, $width, $height);
++    }
+ }
+diff --git a/lib/filestorage/tests/file_storage_test.php b/lib/filestorage/tests/file_storage_test.php
+index f453f345171..8310f67af63 100644
+--- a/lib/filestorage/tests/file_storage_test.php
++++ b/lib/filestorage/tests/file_storage_test.php
+@@ -64,7 +64,10 @@ class core_files_file_storage_testcase extends advanced_testcase {
+ 
+         $this->assertTrue($DB->record_exists('files', array('pathnamehash'=>$pathhash)));
+ 
+-        $location = test_stored_file_inspection::get_pretected_pathname($file);
++        $method = new ReflectionMethod('file_system', 'get_local_path_from_storedfile');
++        $method->setAccessible(true);
++        $filesystem = $fs->get_file_system();
++        $location = $method->invokeArgs($filesystem, array($file, true));
+ 
+         $this->assertFileExists($location);
+ 
+@@ -133,7 +136,10 @@ class core_files_file_storage_testcase extends advanced_testcase {
+ 
+         $this->assertTrue($DB->record_exists('files', array('pathnamehash'=>$pathhash)));
+ 
+-        $location = test_stored_file_inspection::get_pretected_pathname($file);
++        $method = new ReflectionMethod('file_system', 'get_local_path_from_storedfile');
++        $method->setAccessible(true);
++        $filesystem = $fs->get_file_system();
++        $location = $method->invokeArgs($filesystem, array($file, true));
+ 
+         $this->assertFileExists($location);
+ 
+@@ -1748,6 +1754,53 @@ class core_files_file_storage_testcase extends advanced_testcase {
+         $this->setExpectedException('coding_exception');
+         $fs->get_unused_filename($contextid, $component, $filearea, $itemid, $filepath, '');
+     }
++
++    /**
++     * Test that mimetype_from_file returns appropriate output when the
++     * file could not be found.
++     */
++    public function test_mimetype_not_found() {
++        $mimetype = file_storage::mimetype('/path/to/nonexistent/file');
++        $this->assertEquals('document/unknown', $mimetype);
++    }
++
++    /**
++     * Test that mimetype_from_file returns appropriate output for a known
++     * file.
++     *
++     * Note: this is not intended to check that functions outside of this
++     * file works. It is intended to validate the codepath contains no
++     * errors and behaves as expected.
++     */
++    public function test_mimetype_known() {
++        $filepath = __DIR__ . DIRECTORY_SEPARATOR . 'fixtures' . DIRECTORY_SEPARATOR . 'testimage.jpg';
++        $mimetype = file_storage::mimetype_from_file($filepath);
++        $this->assertEquals('image/jpeg', $mimetype);
++    }
++
++    /**
++     * Test that mimetype_from_file returns appropriate output when the
++     * file could not be found.
++     */
++    public function test_mimetype_from_file_not_found() {
++        $mimetype = file_storage::mimetype_from_file('/path/to/nonexistent/file');
++        $this->assertEquals('document/unknown', $mimetype);
++    }
++
++    /**
++     * Test that mimetype_from_file returns appropriate output for a known
++     * file.
++     *
++     * Note: this is not intended to check that functions outside of this
++     * file works. It is intended to validate the codepath contains no
++     * errors and behaves as expected.
++     */
++    public function test_mimetype_from_file_known() {
++        $filepath = __DIR__ . DIRECTORY_SEPARATOR . 'fixtures' . DIRECTORY_SEPARATOR . 'testimage.jpg';
++        $mimetype = file_storage::mimetype_from_file($filepath);
++        $this->assertEquals('image/jpeg', $mimetype);
++    }
++
+ }
+ 
+ class test_stored_file_inspection extends stored_file {
+diff --git a/lib/filestorage/tests/mbz_packer_test.php b/lib/filestorage/tests/mbz_packer_test.php
+index 5882218379a..34d85d5c27d 100644
+--- a/lib/filestorage/tests/mbz_packer_test.php
++++ b/lib/filestorage/tests/mbz_packer_test.php
+@@ -54,7 +54,7 @@ class core_files_mbz_packer_testcase extends advanced_testcase {
+         $this->assertNotEmpty($packer->archive_to_pathname($files, $filetrue));
+         $context = context_system::instance();
+         $this->assertNotEmpty($storagetrue = $packer->archive_to_storage(
+-                $files, $context->id, 'phpunit', 'data', 0, '/', 'false.mbz'));
++                $files, $context->id, 'phpunit', 'data', 0, '/', 'true.mbz'));
+ 
+         // Check the sizes are different (indicating different formats).
+         $this->assertNotEquals(filesize($filefalse), filesize($filetrue));
+diff --git a/lib/moodlelib.php b/lib/moodlelib.php
+index 29ceb7917d6..95eb29c4900 100644
+--- a/lib/moodlelib.php
++++ b/lib/moodlelib.php
+@@ -6215,30 +6215,23 @@ function email_is_not_allowed($email) {
+  *
+  * @return file_storage
+  */
+-function get_file_storage() {
++function get_file_storage($reset = false) {
+     global $CFG;
+ 
+     static $fs = null;
+ 
++    if ($reset) {
++        $fs = null;
++        return;
++    }
++
+     if ($fs) {
+         return $fs;
+     }
+ 
+     require_once("$CFG->libdir/filelib.php");
+ 
+-    if (isset($CFG->filedir)) {
+-        $filedir = $CFG->filedir;
+-    } else {
+-        $filedir = $CFG->dataroot.'/filedir';
+-    }
+-
+-    if (isset($CFG->trashdir)) {
+-        $trashdirdir = $CFG->trashdir;
+-    } else {
+-        $trashdirdir = $CFG->dataroot.'/trashdir';
+-    }
+-
+-    $fs = new file_storage($filedir, $trashdirdir, "$CFG->tempdir/filestorage", $CFG->directorypermissions, $CFG->filepermissions);
++    $fs = new file_storage();
+ 
+     return $fs;
+ }
+diff --git a/lib/phpunit/bootstrap.php b/lib/phpunit/bootstrap.php
+index aff8506868e..9663b59f1ad 100644
+--- a/lib/phpunit/bootstrap.php
++++ b/lib/phpunit/bootstrap.php
+@@ -186,7 +186,7 @@ $allowed = array('wwwroot', 'dataroot', 'dirroot', 'admin', 'directorypermission
+                  'dbtype', 'dblibrary', 'dbhost', 'dbname', 'dbuser', 'dbpass', 'prefix', 'dboptions',
+                  'proxyhost', 'proxyport', 'proxytype', 'proxyuser', 'proxypassword', 'proxybypass', // keep proxy settings from config.php
+                  'altcacheconfigpath', 'pathtogs', 'pathtodu', 'aspellpath', 'pathtodot',
+-                 'pathtounoconv'
++                 'pathtounoconv', 'alternative_file_system_class'
+                 );
+ $productioncfg = (array)$CFG;
+ $CFG = new stdClass();
+diff --git a/question/format/blackboard_six/formatbase.php b/question/format/blackboard_six/formatbase.php
+index 5033827650a..a2bf4fbff8b 100644
+--- a/question/format/blackboard_six/formatbase.php
++++ b/question/format/blackboard_six/formatbase.php
+@@ -47,7 +47,7 @@ class qformat_blackboard_six_base extends qformat_based_on_xml {
+ 
+     /**
+      * Check if the given file is capable of being imported by this plugin.
+-     * As {@link file_storage::mimetype()} now uses finfo PHP extension if available,
++     * As {@link file_storage::mimetype()} may use finfo PHP extension if available,
+      * the value returned by $file->get_mimetype for a .dat file is not the same on all servers.
+      * So we must made 2 checks to verify if the plugin can import the file.
+      * @param stored_file $file the file to check
+diff --git a/repository/lib.php b/repository/lib.php
+index 5d0d905be5b..5cfd4bf6e1a 100644
+--- a/repository/lib.php
++++ b/repository/lib.php
+@@ -1717,12 +1717,13 @@ abstract class repository implements cacheable_object {
+                                                                         'size' => $maxbytesdisplay));
+             }
+             $fs = get_file_storage();
+-            $contentexists = $fs->content_exists($file->get_contenthash());
+-            if ($contentexists && $file->get_filesize() && $file->get_contenthash() === sha1('')) {
+-                // even when 'file_storage::content_exists()' returns true this may be an empty
+-                // content for the file that was not actually downloaded
+-                $contentexists = false;
+-            }
++
++            // If a file has been downloaded, the file record should report both a positive file
++            // size, and a contenthash which does not related to empty content.
++            // If thereis no file size, or the contenthash is for an empty file, then the file has
++            // yet to be successfully downloaded.
++            $contentexists = $file->get_filesize() && $file->get_contenthash() !== sha1('');
++
+             if (!$file->get_status() && $contentexists) {
+                 // we already have the content in moodle filepool and it was synchronised recently.
+                 // Repositories may overwrite it if they want to force synchronisation anyway!
