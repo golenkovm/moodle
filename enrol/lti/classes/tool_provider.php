@@ -291,6 +291,9 @@ class tool_provider extends ToolProvider {
         // Check if we need to force the page layout to embedded.
         $isforceembed = $this->resourceLink->getSetting('custom_force_embed') == 1;
 
+        // Check if we need to prevent the page layout to be embedded for students.
+        $ispreventembed = $this->resourceLink->getSetting('custom_prevent_embed') == 1;
+
         // Check if we are an instructor.
         $isinstructor = $this->user->isStaff() || $this->user->isAdmin();
 
@@ -303,7 +306,7 @@ class tool_provider extends ToolProvider {
             $urltogo = new moodle_url('/mod/' . $cm->modname . '/view.php', ['id' => $cm->id]);
 
             // If we are a student in the course module context we do not want to display blocks.
-            if (!$isforceembed && !$isinstructor) {
+            if (!$isforceembed && !$isinstructor && !$ispreventembed) {
                 $isforceembed = true;
             }
         } else {
