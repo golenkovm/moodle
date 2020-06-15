@@ -1794,9 +1794,10 @@ class core_renderer extends renderer_base {
      * Output all the blocks in a particular region.
      *
      * @param string $region the name of a region on this page.
+     * @param boolean $fakeblocksonly Output fake block only.
      * @return string the HTML to be output.
      */
-    public function blocks_for_region($region) {
+    public function blocks_for_region($region, $fakeblocksonly = false) {
         $blockcontents = $this->page->blocks->get_content_for_region($region, $this);
         $blocks = $this->page->blocks->get_blocks_for_region($region);
         $lastblock = null;
@@ -1808,10 +1809,18 @@ class core_renderer extends renderer_base {
 
         foreach ($blockcontents as $bc) {
             if ($bc instanceof block_contents) {
-                $output .= $this->block($bc, $region);
+                if (!$fakeblocksonly) {
+                    $output .= $this->block($bc, $region);
+                } else {
+                    if ($bc->is_fake()) {
+                        $output .= $this->block($bc, $region);
+                    }
+                }
                 $lastblock = $bc->title;
             } else if ($bc instanceof block_move_target) {
-                $output .= $this->block_move_target($bc, $zones, $lastblock, $region);
+                if (!$fakeblocksonly) {
+                    $output .= $this->block_move_target($bc, $zones, $lastblock, $region);
+                }
             } else {
                 throw new coding_exception('Unexpected type of thing (' . get_class($bc) . ') found in list of block contents.');
             }
@@ -3905,9 +3914,12 @@ EOD;
      *
      * @since Moodle 2.5.1 2.6
      * @param string $region The region to get HTML for.
+     * @param array $classes Wrapping tag classes.
+     * @param string $tag Wrapping tag.
+     * @param boolean $fakeblocksonly Include fake blocks only.
      * @return string HTML.
      */
-    public function blocks($region, $classes = array(), $tag = 'aside') {
+    public function blocks($region, $classes = array(), $tag = 'aside', $fakeblocksonly = false) {
         $displayregion = $this->page->apply_theme_region_manipulations($region);
         $classes = (array)$classes;
         $classes[] = 'block-region';
@@ -3918,7 +3930,7 @@ EOD;
             'data-droptarget' => '1'
         );
         if ($this->page->blocks->region_has_content($displayregion, $this)) {
-            $content = $this->blocks_for_region($displayregion);
+            $content = $this->blocks_for_region($displayregion, $fakeblocksonly);
         } else {
             $content = '';
         }
@@ -5013,9 +5025,10 @@ class core_renderer_maintenance extends core_renderer {
      * @param string $region
      * @param array $classes
      * @param string $tag
+     * @param boolean $fakeblocksonly
      * @return string
      */
-    public function blocks($region, $classes = array(), $tag = 'aside') {
+    public function blocks($region, $classes = array(), $tag = 'aside', $fakeblocksonly = false) {
         return '';
     }
 
@@ -5023,9 +5036,10 @@ class core_renderer_maintenance extends core_renderer {
      * Does nothing. The maintenance renderer cannot produce blocks.
      *
      * @param string $region
+     * @param boolean $fakeblocksonly Output fake block only.
      * @return string
      */
-    public function blocks_for_region($region) {
+    public function blocks_for_region($region, $fakeblocksonly = false) {
         return '';
     }
 
