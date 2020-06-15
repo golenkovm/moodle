@@ -3407,6 +3407,18 @@ class block_contents {
     public function add_class($class) {
         $this->attributes['class'] .= ' '.$class;
     }
+
+    /**
+     * Check if the block is a fake block.
+     *
+     * @param boolean
+     */
+    public function is_fake() {
+        if (array_key_exists('data-block', $this->attributes) && $this->attributes['data-block'] == '_fake') {
+            return true;
+        }
+        return false;
+    }
 }
 
 

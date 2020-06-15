@@ -46,8 +46,17 @@
 
 {{{ output.standard_top_of_body_html }}}
 <div id="page">
-    <div id="page-content" class="d-block">
-        {{{ output.main_content }}}
+    <div id="page-content" class="row">
+        <div id="region-main-box" class="col-12">
+            <section id="region-main" {{#hasfakeblocks}}class="has-blocks"{{/hasfakeblocks}} aria-label="{{#str}}content{{/str}}">
+                {{{ output.main_content }}}
+            </section>
+            {{#hasfakeblocks}}
+                <section data-region="blocks-column" aria-label="{{#str}}blocks{{/str}}">
+                    {{{ sidefakeblocks }}}
+                </section>
+            {{/hasfakeblocks}}
+        </div>
     </div>
 </div>
 {{{ output.standard_end_of_body_html }}}

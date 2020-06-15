@@ -650,4 +650,13 @@ EOF;
         $this->assertTrue(in_array(['name' => 'class', 'value' => $labelclass], $data->labelattributes));
         $this->assertTrue(in_array(['name' => 'style', 'value' => $labelstyle], $data->labelattributes));
     }
+
+    /**
+     * Test block_contents is_fake() method.
+     */
+    public function test_block_contents_if_fake() {
+        $bc = new block_contents(array());
+        $bc->attributes['data-block'] = '_fake';
+        $this->assertTrue($bc->is_fake());
+    }
 }

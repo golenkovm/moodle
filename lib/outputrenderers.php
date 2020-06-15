@@ -1839,6 +1839,27 @@ class core_renderer extends renderer_base {
     }
 
     /**
+     * Output fake blocks in a particular region.
+     *
+     * @param string $region the name of a region on this page.
+     * @return string the HTML to be output.
+     */
+    public function fake_blocks_for_region($region) {
+        $blockcontents = $this->page->blocks->get_content_for_region($region, $this);
+        $output = '';
+        foreach ($blockcontents as $bc) {
+            if ($bc instanceof block_contents) {
+                if ($bc->is_fake()) {
+                    $output .= $this->block($bc, $region);
+                }
+            } else {
+                throw new coding_exception('Unexpected type of thing (' . get_class($bc) . ') found in list of block contents.');
+            }
+        }
+        return $output;
+    }
+
+    /**
      * Output a place where the block that is currently being moved can be dropped.
      *
      * @param block_move_target $target with the necessary details.
@@ -3969,6 +3990,28 @@ EOD;
             $content = '';
         }
         return html_writer::tag($tag, $content, $attributes);
+    }
+
+    /**
+     * Get the HTML for fake blocks in the given region.
+     *
+     * @param  string $region The region to get HTML for.
+     * @return string HTML.
+     */
+    public function fake_blocks($region) {
+        $displayregion = $this->page->apply_theme_region_manipulations($region);
+        $attributes = array(
+            'id' => 'block-region-'.preg_replace('#[^a-zA-Z0-9_\-]+#', '-', $displayregion),
+            'class' => 'block-region',
+            'data-blockregion' => $displayregion,
+            'data-droptarget' => '1'
+        );
+        if ($this->page->blocks->region_has_content($displayregion, $this)) {
+            $content = $this->fake_blocks_for_region($displayregion);
+        } else {
+            $content = '';
+        }
+        return html_writer::tag('aside', $content, $attributes);
     }
 
     /**
