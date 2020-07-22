@@ -1,6 +1,10 @@
 This files describes API changes in /calendar/* ,
 information provided here is intended especially for developers.
 
+=== 3.7 ===
+* The core_calendar\local\event\value_objects\times_interface class now has new method get_usermidnight_time() which
+  returns the user midnight time for a given event.
+
 === 3.6 ===
 * calendar_get_default_courses() function now has optional $userid parameter.
 * calendar_set_filters() function now has optional $user parameter.

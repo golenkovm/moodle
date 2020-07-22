@@ -464,7 +464,8 @@ class core_calendar_external extends external_api {
         $exportercache = new events_related_objects_cache($events);
         $exporter = new events_exporter($events, ['cache' => $exportercache]);
 
-        return $exporter->export($renderer);
+        $lol = $exporter->export($renderer);
+        return $lol;
     }
 
     /**
