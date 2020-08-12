@@ -65,69 +65,50 @@ class behat_tool_task extends behat_base {
 
         foreach ($data->getHash() as $rowdata) {
             // Check and get the data from the user-entered row.
-            $fields = array_flip(['type', 'classname', 'seconds', 'process']);
+            $fields = array_flip(['type', 'classname', 'seconds', 'hostname', 'pid']);
             foreach ($rowdata as $key => $value) {
                 if (!array_key_exists($key, $fields)) {
-                    throw new Exception('Field "' . $key . '" does not exist');
-                }
-                if ($value === '' && in_array($key, ['classname', 'type'])) {
-                    // You can set the seconds  and process fields blank to 'stop' it running.
-                    throw new Exception('Field "' . $key . '" is blank');
+                    throw new Exception('Unexpected field "' . $key);
                 }
             }
-            foreach (['classname', 'type'] as $requiredfield) {
-                if (!array_key_exists($requiredfield, $rowdata) ||
-                        $rowdata[$requiredfield] === '') {
-                    throw new Exception('Field "' . $key . '" must be set');
-                }
+            // You can set the seconds, hostname and pid fields blank to 'stop' task running,
+            // but classname and type fields must be set.
+            if (empty($rowdata['classname']) || empty($rowdata['type'])) {
+                throw new Exception('Classname and type fields must be set');
             }
 
-            // Default values.
-            $adhoc = $rowdata['type'] === 'adhoc';
-            $scheduled = $rowdata['type'] === 'scheduled';
-            if (!$adhoc && !$scheduled) {
+            // Check type task.
+            if ($rowdata['type'] !== 'adhoc' && $rowdata['type'] !== 'scheduled') {
                 throw new Exception('Type must be adhoc or scheduled');
             }
-            if (!array_key_exists('seconds', $rowdata)) {
-                $rowdata['seconds'] = '1';
-            }
 
-            // Get start time (or null if stopping).
-            if ($rowdata['seconds']) {
-                $starttime = time() - $rowdata['seconds'];
-            } else {
-                $starttime = null;
-            }
-
-            // Get process info (or null if stopping).
-            if ($rowdata['process']) {
-                $processinfo = $rowdata['process'];
-            } else {
-                $processinfo = null;
-            }
-
-            if ($scheduled) {
+            if ($rowdata['type'] === 'scheduled') {
                 // For scheduled tasks, find the matching row and set it.
                 $record = $DB->get_record('task_scheduled', ['classname' => $rowdata['classname']]);
-                $record->startedwhen = $starttime;
-                $record->startedwhere = $processinfo;
-                $DB->update_record('task_scheduled', $record);
+                if (empty($rowdata['seconds'])) {
+                    $record->timestarted = null;
+                    $record->hostname = null;
+                    $record->pid = null;
+                    $DB->update_record('task_scheduled', $record);
+                } else {
+                    $record->timestarted = time() - $rowdata['seconds'];
+                    $record->hostname = $rowdata['hostname'];
+                    $record->pid = $rowdata['pid'];
+                    $DB->update_record('task_scheduled', $record);
+                }
             } else {
-                $task = new $rowdata['classname'];
                 // For ad-hoc tasks, add or delete a row.
-                if ($starttime) {
-                    $faketask = [
-                        'component' => $task->get_component(),
+                if (!empty($rowdata['seconds'])) {
+                    $faketask = (object)[
                         'classname' => $rowdata['classname'],
                         'nextruntime' => 0,
-                        'blocking' => 0,
-                        'startedwhen' => $starttime,
-                        'startedwhere' => $processinfo
+                        'timestarted' => time() - $rowdata['seconds'],
+                        'hostname' => $rowdata['hostname'],
+                        'pid' => $rowdata['pid'],
                     ];
                     $DB->insert_record('task_adhoc', $faketask);
                 } else {
-                    $DB->delete_records('task_adhoc', ['classname' => $rowdata['classname'],
-                            'nextruntime' => 0]);
+                    $DB->delete_records('task_adhoc', ['classname' => $rowdata['classname']]);
                 }
             }
         }
