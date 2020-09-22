@@ -527,10 +527,11 @@ class data_field_base {     // Base class for Database Field Types (see field/*/
      * Per default, return the record's text value only from the "content" field.
      * Override this in fields class if necesarry.
      *
-     * @param string $record
+     * @param object $record Record object to be exported
+     * @param array $exportoptions Export options
      * @return string
      */
-    function export_text_value($record) {
+    public function export_text_value($record, $exportoptions) {
         if ($this->text_export_supported()) {
             return $record->content;
         }
@@ -3279,10 +3280,11 @@ function data_export_ods($export, $dataname, $count) {
  * @param bool $time whether to include time created/modified
  * @param bool $approval whether to include approval status
  * @param bool $tags whether to include tags
+ * @param bool $humanreadabledate whether to export dates as formatted dates
  * @return array
  */
 function data_get_exportdata($dataid, $fields, $selectedfields, $currentgroup=0, $context=null,
-                             $userdetails=false, $time=false, $approval=false, $tags = false) {
+                             $userdetails=false, $time=false, $approval=false, $tags = false, $humanreadabledate = false) {
     global $DB;
 
     if (is_null($context)) {
@@ -3292,6 +3294,11 @@ function data_get_exportdata($dataid, $fields, $selectedfields, $currentgroup=0,
     $userdetails = $userdetails && has_capability('mod/data:exportuserinfo', $context);
 
     $exportdata = array();
+    $exportoptions = array();
+
+    if ($humanreadabledate) {
+        $exportoptions['humanreadabledate'] = true;
+    }
 
     // populate the header in first row of export
     foreach($fields as $key => $field) {
@@ -3335,7 +3342,7 @@ function data_get_exportdata($dataid, $fields, $selectedfields, $currentgroup=0,
             foreach($fields as $field) {
                 $contents = '';
                 if(isset($content[$field->field->id])) {
-                    $contents = $field->export_text_value($content[$field->field->id]);
+                    $contents = $field->export_text_value($content[$field->field->id], $exportoptions);
                 }
                 $exportdata[$line][] = $contents;
             }

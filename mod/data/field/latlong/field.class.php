@@ -260,7 +260,14 @@ class data_field_latlong extends data_field_base {
         return $DB->sql_cast_char2real($fieldname, true);
     }
 
-    function export_text_value($record) {
+    /**
+     * Returns the record's text value from the "content" and "content1" fields.
+     *
+     * @param object $record Record object to be exported
+     * @param array $exportoptions Export option
+     * @return string Date value
+     */
+    public function export_text_value($record, $exportoptions) {
         // The content here is from the database and does not require location formating.
         return sprintf('%01.4f', $record->content) . ' ' . sprintf('%01.4f', $record->content1);
     }

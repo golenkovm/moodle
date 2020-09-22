@@ -33,6 +33,7 @@ $exportuser = optional_param('exportuser', false, PARAM_BOOL); // Flag for expor
 $exporttime = optional_param('exporttime', false, PARAM_BOOL); // Flag for exporting date/time information
 $exportapproval = optional_param('exportapproval', false, PARAM_BOOL); // Flag for exporting user details
 $tags = optional_param('exporttags', false, PARAM_BOOL); // Flag for exporting user details.
+$humanreadabledate = optional_param('humanreadabledate', false, PARAM_BOOL);
 
 $PAGE->set_url('/mod/data/export.php', array('d'=>$d));
 
@@ -113,7 +114,7 @@ foreach ($formdata as $key => $value) {
 $currentgroup = groups_get_activity_group($cm);
 
 $exportdata = data_get_exportdata($data->id, $fields, $selectedfields, $currentgroup, $context,
-                                  $exportuser, $exporttime, $exportapproval, $tags);
+                                  $exportuser, $exporttime, $exportapproval, $tags, $humanreadabledate);
 $count = count($exportdata);
 switch ($formdata['exporttype']) {
     case 'csv':
