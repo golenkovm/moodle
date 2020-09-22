@@ -224,7 +224,14 @@ class data_field_url extends data_field_base {
         return false;
     }
 
-    function export_text_value($record) {
+    /**
+     * Returns the record's text value from the "content" and "content1" fields.
+     *
+     * @param object $record Record object to be exported
+     * @param array $exportoptions Export option
+     * @return string Date value
+     */
+    public function export_text_value($record, $exportoptions) {
         return $record->content . " " . $record->content1;
     }
 

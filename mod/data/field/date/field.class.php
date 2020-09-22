@@ -190,4 +190,20 @@ class data_field_date extends data_field_base {
         }
         return $configs;
     }
+
+    /**
+     * Returns the record's text value from the "content" field.
+     * If checkbox 'humanreadabledate' is checked, then the date
+     * value is formatted using the userdate function.
+     *
+     * @param object $record Record object to be exported
+     * @param array $exportoptions Export option
+     * @return string Date value
+     */
+    public function export_text_value($record, $exportoptions) {
+        if (!empty($exportoptions['humanreadabledate'])) {
+            return userdate($record->content);
+        }
+        return parent::export_text_value($record, $exportoptions);
+    }
 }

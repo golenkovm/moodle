@@ -31,7 +31,7 @@ class mod_data_export_form extends moodleform {
     }
 
     function definition() {
-        global $CFG;
+        global $CFG, $OUTPUT;
         $mform =& $this->_form;
         $mform->addElement('header', 'notice', get_string('chooseexportformat', 'data'));
         $choices = csv_import_reader::get_delimiter_list();
@@ -89,6 +89,10 @@ class mod_data_export_form extends moodleform {
         if ($this->_data->approval) {
             $mform->addElement('checkbox', 'exportapproval', get_string('includeapproval', 'data'));
         }
+
+        $mform->addElement('checkbox', 'humanreadabledate', get_string('humanreadabledate', 'data'));
+        $mform->addElement('static', 'humanreadabledatewarning', '',
+            $OUTPUT->notification(get_string('humanreadabledatewarning', 'data'), 'warning'));
 
         $this->add_action_buttons(true, get_string('exportentries', 'data'));
     }
