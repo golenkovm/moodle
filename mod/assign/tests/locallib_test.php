@@ -4201,4 +4201,62 @@ Anchor link 2:<a title=\"bananas\" href=\"../logo-240x60.gif\">Link text</a>
         $output3 .= $assign->get_renderer()->render($summary);
         $this->assertContains('Friday, 7 June 2019, 5:37 PM', $output3, '', true);
     }
+
+    /**
+     * Test that stream_zipped_files() method zips files and streams the archive.
+     * As stream_zipped_files() sets headers, runInSeparateProcess annotation is used.
+     *
+     * @runInSeparateProcess
+     */
+    public function test_stream_zipped_files() {
+        global $CFG;
+        $this->resetAfterTest();
+
+        $course = $this->getDataGenerator()->create_course();
+        $assign = $this->create_instance($course);
+
+        $filerecordbase = array(
+            'contextid' => context_system::instance()->id,
+            'component' => 'core',
+            'filearea'  => 'unittest',
+            'itemid'    => 0,
+            'filepath'  => '/',
+        );
+
+        $filerecord1 = $filerecordbase + ['filename' => 'file1.txt'];
+        $filerecord2 = $filerecordbase + ['filename' => 'file2.txt'];
+
+        $content1 = random_string(100);
+        $content2 = random_string(200);
+
+        $fs = get_file_storage();
+        $file1 = $fs->create_file_from_string($filerecord1, $content1);
+        $file2 = $fs->create_file_from_string($filerecord2, $content2);
+        $files = [$file1->get_filename() => $file1, $file2->get_filename() => $file2];
+
+        // Stream zipped files and catch the content.
+        ob_start();
+        $assign->stream_zipped_files('archive.zip', $files);
+        $streamcontent = ob_get_contents();
+        ob_end_clean();
+
+        // Convert the content into Moodle file.
+        $archiverecord = $filerecordbase + ['filename' => 'archive.zip'];
+        $archivefile = $fs->create_file_from_string($archiverecord, $streamcontent);
+
+        // Unzip the archive.
+        $packer = get_file_packer('application/zip');
+        $unzipresults = $packer->extract_to_pathname($archivefile, $CFG->tempdir);
+
+        // Assert the stuff.
+        $this->assertEquals('application/zip', $archivefile->get_mimetype());
+        $this->assertCount(2, $unzipresults);
+        foreach ($unzipresults as $filename => $status) {
+            $this->assertTrue($status);
+        }
+        $this->assertFileExists($CFG->tempdir . '/file1.txt');
+        $this->assertFileExists($CFG->tempdir . '/file2.txt');
+        $this->assertStringEqualsFile($CFG->tempdir . '/file1.txt', $content1);
+        $this->assertStringEqualsFile($CFG->tempdir . '/file2.txt', $content2);
+    }
 }

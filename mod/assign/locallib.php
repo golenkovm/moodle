@@ -2506,27 +2506,6 @@ class assign {
     }
 
     /**
-     * Generate zip file from array of given files.
-     *
-     * @param array $filesforzipping - array of files to pass into archive_to_pathname.
-     *                                 This array is indexed by the final file name and each
-     *                                 element in the array is an instance of a stored_file object.
-     * @return path of temp file - note this returned file does
-     *         not have a .zip extension - it is a temp file.
-     */
-    protected function pack_files($filesforzipping) {
-        global $CFG;
-        // Create path for new zip file.
-        $tempzip = tempnam($CFG->tempdir . '/', 'assignment_');
-        // Zip files.
-        $zipper = new zip_packer();
-        if ($zipper->archive_to_pathname($filesforzipping, $tempzip)) {
-            return $tempzip;
-        }
-        return false;
-    }
-
-    /**
      * Finds all assignment notifications that have yet to be mailed out, and mails them.
      *
      * Cron function to be run periodically according to the moodle cron.
@@ -3660,11 +3639,8 @@ class assign {
                                                                     'action'=>'grading'));
             $result .= $this->get_renderer()->continue_button($url);
             $result .= $this->view_footer();
-        } else if ($zipfile = $this->pack_files($filesforzipping)) {
-            \mod_assign\event\all_submissions_downloaded::create_from_assign($this)->trigger();
-            // Send file and delete after sending.
-            send_temp_file($zipfile, $filename);
-            // We will not get here - send_temp_file calls exit.
+        } else {
+            $this->stream_zipped_files($filename, $filesforzipping);
         }
         return $result;
     }
@@ -9434,6 +9410,34 @@ class assign {
         }
 
         return $submissionstatement;
+    }
+
+    /**
+     * Zips files and streams the archive without saving on the disk.
+     *
+     * @param string $archivename Zip file to be named to
+     * @param array $files The list of stored_file to zip and stream
+     * @return void
+     */
+    public function stream_zipped_files(string $archivename, array $files): void {
+        // Close session first.
+        \core\session\manager::write_close();
+
+        $options = new \ZipStream\Option\Archive();
+        $options->setSendHttpHeaders(true);
+        $options->setContentDisposition('attachment');
+        $options->setContentType('application/x-zip');
+        $options->setDeflateLevel(1);
+
+        $archive = new \ZipStream\ZipStream($archivename, $options);
+
+        foreach ($files as $filename => $file) {
+            $path = $file->get_content_file_handle();
+            $archive->addFileFromStream($filename, $path);
+        }
+
+        // Finish the zip stream.
+        $archive->finish();
     }
 }
 
