@@ -115,7 +115,7 @@ class feedback_item_textarea extends feedback_item_base {
         if ($values) {
             $data = array();
             foreach ($values as $value) {
-                $data[] = str_replace("\n", '<br />', $value->value);
+                $data[] = $value->value;
             }
             $analysed_val->data = $data;
         }
