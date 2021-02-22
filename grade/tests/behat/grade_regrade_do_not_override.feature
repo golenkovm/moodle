@@ -23,10 +23,7 @@ Feature: Regrading grades does not unnecessarily mark some as overriden
     And I navigate to "Grades > Grade category settings" in site administration
     And I set the field "Available aggregation types" to "Weighted mean of grades"
     And I press "Save changes"
-
-  @javascript
-  Scenario: Regrade but do not overwrite overridden status
-    Given I am on "Course 1" course homepage
+    And I am on "Course 1" course homepage
     And I follow "Assignment 1"
     And I navigate to "View all submissions" in current page administration
     And I click on "Grade" "link" in the "Student 1" "table_row"
@@ -39,7 +36,11 @@ Feature: Regrading grades does not unnecessarily mark some as overriden
     And I turn editing mode on
     And I give the grade "80.00" to the user "Student 2" for the grade item "Course total"
     And I press "Save changes"
-    And I navigate to "View > Grader report" in the course gradebook
+    And I turn editing mode off
+
+  @javascript
+  Scenario: Regrade but do not overwrite overridden status
+    Given I navigate to "View > Grader report" in the course gradebook
     And I navigate to "Setup > Gradebook setup" in the course gradebook
     And I click on "Edit" "link" in the ".coursecategory" "css_element"
     And I click on "Edit settings" "link" in the ".coursecategory" "css_element"
@@ -48,10 +49,31 @@ Feature: Regrading grades does not unnecessarily mark some as overriden
     And I set the field "Maximum grade" to "200"
     And I press "Save changes"
     When I navigate to "View > Grader report" in the course gradebook
+    Then "td.overridden" "css_element" should not exist in the "Student 1" "table_row"
+    And "td.overridden" "css_element" should exist in the "Student 2" "table_row"
+
+  @javascript
+  Scenario: Overridden course total does not get regraded when activity grade is changes while not overridden course total does
+    Given I navigate to "View > Grader report" in the course gradebook
+    And I navigate to "Setup > Gradebook setup" in the course gradebook
+    And I click on "Edit" "link" in the ".coursecategory" "css_element"
+    And I click on "Edit settings" "link" in the ".coursecategory" "css_element"
+    And I set the field "Aggregation" to "Weighted mean of grades"
+    And I set the field "Rescale overridden grades" to "Yes"
+    And I set the field "Maximum grade" to "200"
+    And I press "Save changes"
+    And I am on "Course 1" course homepage
+    And I follow "Assignment 1"
+    And I navigate to "View all submissions" in current page administration
+    And I click on "Grade" "link" in the "Student 1" "table_row"
+    And I set the field "Grade out of 100" to "90"
+    And I press "Save and show next"
+    And I set the field "Grade out of 100" to "70"
+    And I press "Save changes"
+    When I am on "Course 1" course homepage
+    And I navigate to "View > Grader report" in the course gradebook
     Then the following should exist in the "gradereport-grader-table" table:
       |                      |              |              |
       | First name / Surname | Assignment 1 | Course total |
-      | Student 1            | 80.00        | 160.00       |
-      | Student 2            | 60.00        | 160.00       |
-    And "td.overridden" "css_element" should not exist in the "Student 1" "table_row"
-    And "td.overridden" "css_element" should exist in the "Student 2" "table_row"
+      | Student 1            | 90.00        | 180.00       |
+      | Student 2            | 70.00        | 160.00       |
