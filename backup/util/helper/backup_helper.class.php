@@ -153,30 +153,27 @@ abstract class backup_helper {
      * If supplied, progress object should be ready to receive indeterminate
      * progress reports.
      *
-     * @param int $deletefrom Time to delete from
+     * @param int $deletebefore Delete files and directories older than this time
      * @param \core\progress\base $progress Optional progress reporting object
      */
-    static public function delete_old_backup_dirs($deletefrom, \core\progress\base $progress = null) {
-        $status = true;
-        // Get files and directories in the backup temp dir without descend.
+    static public function delete_old_backup_dirs($deletebefore, \core\progress\base $progress = null) {
+        // Get files and directories in the backup temp dir.
         $backuptempdir = make_backup_temp_directory('');
-        $list = get_directory_list($backuptempdir, '', false, true, true);
-        foreach ($list as $file) {
-            $file_path = $backuptempdir . '/' . $file;
-            $moddate = filemtime($file_path);
-            if ($status && $moddate < $deletefrom) {
-                //If directory, recurse
-                if (is_dir($file_path)) {
-                    // $file is really the backupid
-                    $status = self::delete_backup_dir($file, $progress);
-                //If file
-                } else {
-                    unlink($file_path);
+        $items = new DirectoryIterator($backuptempdir);
+        foreach ($items as $item) {
+            if ($item->isDot()) {
+                continue;
+            }
+            if ($item->getMTime() < $deletebefore) {
+                if ($item->isDir()) {
+                    // The item is a directory for some backup.
+                    if (!self::delete_backup_dir($item->getFilename(), $progress)) {
+                        throw new backup_helper_exception('problem_deleting_old_backup_temp_dirs');
+                    }
+                } else if ($item->isFile()) {
+                    unlink($item->getPathname());
                 }
             }
-        }
-        if (!$status) {
-            throw new backup_helper_exception('problem_deleting_old_backup_temp_dirs');
         }
     }
 
