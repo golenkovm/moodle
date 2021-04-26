@@ -2367,7 +2367,8 @@ function blocks_delete_instance($instance, $nolongerused = false, $skipblockstab
     if (!$skipblockstables) {
         $DB->delete_records('block_positions', array('blockinstanceid' => $instance->id));
         $DB->delete_records('block_instances', array('id' => $instance->id));
-        $DB->delete_records_list('user_preferences', 'name', array('block'.$instance->id.'hidden','docked_block_instance_'.$instance->id));
+        $DB->delete_records('user_preferences', array('name' => 'block'.$instance->id.'hidden'));
+        $DB->delete_records('user_preferences', array('name' => 'docked_block_instance_'.$instance->id));
     }
 }
 
@@ -2390,19 +2391,9 @@ function blocks_delete_instances($instanceids) {
     foreach ($chunks as $chunk) {
         $instances = $DB->get_recordset_list('block_instances', 'id', $chunk);
         foreach ($instances as $instance) {
-            blocks_delete_instance($instance, false, true);
+            blocks_delete_instance($instance);
         }
         $instances->close();
-
-        $DB->delete_records_list('block_positions', 'blockinstanceid', $chunk);
-        $DB->delete_records_list('block_instances', 'id', $chunk);
-
-        $preferences = array();
-        foreach ($chunk as $instanceid) {
-            $preferences[] = 'block' . $instanceid . 'hidden';
-            $preferences[] = 'docked_block_instance_' . $instanceid;
-        }
-        $DB->delete_records_list('user_preferences', 'name', $preferences);
     }
 }
 
