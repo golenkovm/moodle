@@ -85,6 +85,14 @@ if ($action === 'pollconversions') {
         $combineddocument = document_services::get_combined_pdf_for_attempt($assignment, $userid, $attemptnumber);
         $response->status = $combineddocument->get_status();
         $response->filecount = $combineddocument->get_document_count();
+
+        if (in_array($response->status, $completestatuslist)) {
+            // Remove the submission from the queue as it's already converted.
+            $submission = $assignment->get_user_submission($userid, false, $attemptnumber);
+            if ($submission) {
+                $DB->delete_records('assignfeedback_editpdf_queue', array('submissionid' => $submission->id));
+            }
+        }
     }
 
     if (in_array($response->status, $completestatuslist)) {
