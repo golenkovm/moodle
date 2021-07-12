@@ -43,10 +43,7 @@ class cron_task extends \core\task\scheduled_task {
         $mnetplugin = new \auth_plugin_mnet();
         $mnetplugin->keepalive_client();
 
-        $random100 = rand(0,100);
-        if ($random100 < 10) {
-            $longtime = time() - DAYSECS;
-            $DB->delete_records_select('mnet_session', "expires < ?", [$longtime]);
-        }
+        $longtime = time() - DAYSECS;
+        $DB->delete_records_select('mnet_session', "expires < ?", [$longtime]);
     }
 }
