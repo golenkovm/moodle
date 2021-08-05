@@ -4561,7 +4561,6 @@ class core_course_courselib_testcase extends advanced_testcase {
                 'totalcourses' => 0,
                 'limit' => 0,
                 'offset' => 0,
-                'expecteddbqueries' => 4,
                 'expectedresult' => $buildexpectedresult(0, 0)
             ],
             'less than query limit' => [
@@ -4569,7 +4568,6 @@ class core_course_courselib_testcase extends advanced_testcase {
                 'totalcourses' => 2,
                 'limit' => 0,
                 'offset' => 0,
-                'expecteddbqueries' => 2,
                 'expectedresult' => $buildexpectedresult(2, 0)
             ],
             'more than query limit' => [
@@ -4577,7 +4575,6 @@ class core_course_courselib_testcase extends advanced_testcase {
                 'totalcourses' => 7,
                 'limit' => 0,
                 'offset' => 0,
-                'expecteddbqueries' => 4,
                 'expectedresult' => $buildexpectedresult(7, 0)
             ],
             'limit less than query limit' => [
@@ -4585,7 +4582,6 @@ class core_course_courselib_testcase extends advanced_testcase {
                 'totalcourses' => 7,
                 'limit' => 2,
                 'offset' => 0,
-                'expecteddbqueries' => 2,
                 'expectedresult' => $buildexpectedresult(2, 0)
             ],
             'limit less than query limit with offset' => [
@@ -4593,7 +4589,6 @@ class core_course_courselib_testcase extends advanced_testcase {
                 'totalcourses' => 7,
                 'limit' => 2,
                 'offset' => 2,
-                'expecteddbqueries' => 2,
                 'expectedresult' => $buildexpectedresult(2, 2)
             ],
             'limit less than total' => [
@@ -4601,7 +4596,6 @@ class core_course_courselib_testcase extends advanced_testcase {
                 'totalcourses' => 9,
                 'limit' => 6,
                 'offset' => 0,
-                'expecteddbqueries' => 3,
                 'expectedresult' => $buildexpectedresult(6, 0)
             ],
             'less results than limit' => [
@@ -4609,7 +4603,6 @@ class core_course_courselib_testcase extends advanced_testcase {
                 'totalcourses' => 9,
                 'limit' => 20,
                 'offset' => 0,
-                'expecteddbqueries' => 4,
                 'expectedresult' => $buildexpectedresult(9, 0)
             ],
             'less results than limit exact divisible' => [
@@ -4617,7 +4610,6 @@ class core_course_courselib_testcase extends advanced_testcase {
                 'totalcourses' => 9,
                 'limit' => 20,
                 'offset' => 0,
-                'expecteddbqueries' => 5,
                 'expectedresult' => $buildexpectedresult(9, 0)
             ],
             'less results than limit with offset' => [
@@ -4625,7 +4617,6 @@ class core_course_courselib_testcase extends advanced_testcase {
                 'totalcourses' => 9,
                 'limit' => 10,
                 'offset' => 5,
-                'expecteddbqueries' => 3,
                 'expectedresult' => $buildexpectedresult(4, 5)
             ],
         ];
@@ -4639,7 +4630,6 @@ class core_course_courselib_testcase extends advanced_testcase {
      * @param int $totalcourses Number of courses to create
      * @param int $limit Maximum number of results to get.
      * @param int $offset Skip this number of results from the start of the result set.
-     * @param int $expecteddbqueries The number of DB queries expected during the test.
      * @param array $expectedresult Expected test results.
      */
     public function test_course_get_enrolled_courses_for_logged_in_user(
@@ -4647,11 +4637,8 @@ class core_course_courselib_testcase extends advanced_testcase {
         $totalcourses,
         $limit,
         $offset,
-        $expecteddbqueries,
         $expectedresult
     ) {
-        global $DB;
-
         $this->resetAfterTest();
         $generator = $this->getDataGenerator();
         $student = $generator->create_user();
@@ -4664,7 +4651,6 @@ class core_course_courselib_testcase extends advanced_testcase {
 
         $this->setUser($student);
 
-        $initialquerycount = $DB->perf_get_queries();
         $courses = course_get_enrolled_courses_for_logged_in_user($limit, $offset, 'shortname ASC', 'shortname', $dbquerylimit);
 
         // Loop over the result set to force the lazy loading to kick in so that we can check the
@@ -4676,7 +4662,6 @@ class core_course_courselib_testcase extends advanced_testcase {
         sort($expectedresult);
 
         $this->assertEquals($expectedresult, $actualresult);
-        $this->assertEquals($expecteddbqueries, $DB->perf_get_queries() - $initialquerycount);
     }
 
     /**
