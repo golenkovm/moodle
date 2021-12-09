@@ -1302,21 +1302,28 @@ class api {
             $user = $USER;
         }
 
-        $sql = "SELECT COUNT(DISTINCT(m.conversationid))
-                  FROM {messages} m
-            INNER JOIN {message_conversations} mc
-                    ON m.conversationid = mc.id
-            INNER JOIN {message_conversation_members} mcm
-                    ON mc.id = mcm.conversationid
-             LEFT JOIN {message_user_actions} mua
-                    ON (mua.messageid = m.id AND mua.userid = ? AND mua.action = ?)
-                 WHERE mcm.userid = ?
-                   AND mc.enabled = ?
-                   AND mcm.userid != m.useridfrom
-                   AND mua.id is NULL";
+        $params = [
+            'enabled' => self::MESSAGE_CONVERSATION_ENABLED,
+            'userid' => $user->id,
+            'action' => self::MESSAGE_ACTION_READ
+        ];
 
-        return $DB->count_records_sql($sql, [$user->id, self::MESSAGE_ACTION_READ, $user->id,
-            self::MESSAGE_CONVERSATION_ENABLED]);
+        $sql = "SELECT COUNT(DISTINCT(m.conversationid))
+                  FROM {message_conversations} mc
+                  JOIN {messages} m
+                    ON mc.id = m.conversationid
+                  JOIN {message_conversation_members} mcm
+                    ON mc.id = mcm.conversationid
+                 WHERE mc.enabled = :enabled
+                   AND mcm.userid = :userid
+                   AND mcm.userid != m.useridfrom
+                   AND NOT EXISTS (SELECT 1
+                                     FROM {message_user_actions} mua
+                                    WHERE mua.messageid = m.id
+                                      AND mua.userid = mcm.userid
+                                      AND mua.action = :action)";
+
+        return $DB->count_records_sql($sql, $params);
     }
 
     /**
