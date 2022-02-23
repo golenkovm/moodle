@@ -398,4 +398,16 @@ class store implements \tool_log\log\store, \core\log\sql_reader {
         }
         return $return;
     }
+
+    /**
+     * Gets max record id from the log table.
+     * @deprecated since Moodle 3.6 MDL-52953 - Please use supported log stores such as "standard" or "external" instead.
+     *
+     * @return int Record id.
+     */
+    public function get_max_record_id(): ?int {
+        global $DB;
+        $sql = 'SELECT MAX(id) AS maxid FROM {log}';
+        return $DB->get_record_sql($sql)->maxid;
+    }
 }

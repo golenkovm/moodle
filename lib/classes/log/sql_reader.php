@@ -87,4 +87,11 @@ interface sql_reader extends reader {
      * @return \core\event\base
      */
     public function get_log_event($data);
+
+    /**
+     * Gets max record id from the log table.
+     *
+     * @return int Record id.
+     */
+    public function get_max_record_id(): ?int;
 }

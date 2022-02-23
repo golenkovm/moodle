@@ -34,9 +34,6 @@ defined('MOODLE_INTERNAL') || die;
  */
 class report_loglive_renderable implements renderable {
 
-    /** @const int number of seconds to show logs from, by default. */
-    const CUTOFF = 3600;
-
     /** @var \core\log\manager log manager */
     protected $logmanager;
 
@@ -55,8 +52,11 @@ class report_loglive_renderable implements renderable {
     /** @var moodle_url url of report page */
     public $url;
 
-    /** @var int selected date from which records should be displayed */
-    public $date;
+    /** @var int Min record id */
+    public $fromid;
+
+    /** @var int Max record id */
+    public $toid;
 
     /** @var string order to sort */
     public $order;
@@ -76,19 +76,19 @@ class report_loglive_renderable implements renderable {
      * @param string $logreader (optional)reader pluginname from which logs will be fetched.
      * @param stdClass|int $course (optional) course record or id
      * @param moodle_url|string $url (optional) page url.
-     * @param int $date date (optional) from which records will be fetched.
+     * @param int $fromid id (optional) from which records will be fetched.
      * @param int $page (optional) page number.
      * @param int $perpage (optional) number of records to show per page.
      * @param string $order (optional) sortorder of fetched records
      */
-    public function __construct($logreader = "", $course = 0, $url = "", $date = 0, $page = 0, $perpage = 100,
+    public function __construct($logreader = "", $course = 0, $url = "", $fromid = 0, $page = 0, $perpage = 100,
                                 $order = "timecreated DESC") {
 
         global $PAGE;
 
         // Use first reader as selected reader, if not passed.
+        $readers = $this->get_readers();
         if (empty($logreader)) {
-            $readers = $this->get_readers();
             if (!empty($readers)) {
                 reset($readers);
                 $logreader = key($readers);
@@ -97,6 +97,7 @@ class report_loglive_renderable implements renderable {
             }
         }
         $this->selectedlogreader = $logreader;
+        $reader = $readers[$logreader];
 
         // Use page url if empty.
         if (empty($url)) {
@@ -112,10 +113,9 @@ class report_loglive_renderable implements renderable {
         }
         $this->course = $course;
 
-        if ($date == 0 ) {
-            $date = time() - self::CUTOFF;
-        }
-        $this->date = $date;
+        $maxid = $reader->get_max_record_id();
+        $this->fromid = empty($fromid) ? $maxid - $perpage : $fromid;
+        $this->toid = $maxid;
 
         $this->page = $page;
         $this->perpage = $perpage;
@@ -182,7 +182,8 @@ class report_loglive_renderable implements renderable {
             $filter->courseid = 0;
         }
         $filter->logreader = $readers[$this->selectedlogreader];
-        $filter->date = $this->date;
+        $filter->fromid = $this->fromid;
+        $filter->toid = $this->toid;
         $filter->orderby = $this->order;
 
         return $filter;
@@ -198,7 +199,7 @@ class report_loglive_renderable implements renderable {
         } else {
             if (defined('REPORT_LOGLIVE_REFRESH')) {
                 // Backward compatibility.
-                $this->refresh = REPORT_LOGLIVE_REFERESH;
+                $this->refresh = REPORT_LOGLIVE_REFRESH;
             } else {
                 // Default.
                 $this->refresh = 60;

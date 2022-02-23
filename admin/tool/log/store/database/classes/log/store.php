@@ -308,4 +308,22 @@ class store implements \tool_log\log\writer, \core\log\sql_reader {
         }
         $this->extdb = null;
     }
+
+    /**
+     * Gets max record id from the log table.
+     *
+     * @return int Record id.
+     */
+    public function get_max_record_id(): ?int {
+        if (!$this->init()) {
+            return null;
+        }
+
+        if (!$dbtable = $this->get_config('dbtable')) {
+            return null;
+        }
+
+        $sql = "SELECT MAX(id) AS maxid FROM {$dbtable}";
+        return $this->extdb->get_record_sql($sql)->maxid;
+    }
 }

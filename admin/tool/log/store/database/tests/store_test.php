@@ -28,39 +28,12 @@ require_once(__DIR__ . '/fixtures/event.php');
 require_once(__DIR__ . '/fixtures/store.php');
 
 class logstore_database_store_testcase extends advanced_testcase {
+
     /**
-     * Tests log writing.
-     *
-     * @param bool $jsonformat True to test with JSON format
-     * @dataProvider test_log_writing_provider
-     * @throws moodle_exception
+     * Enable and configure logstore_database plugin.
      */
-    public function test_log_writing(bool $jsonformat) {
-        global $DB, $CFG;
-        $this->resetAfterTest();
-        $this->preventResetByRollback(); // Logging waits till the transaction gets committed.
-
-        // Apply JSON format system setting.
-        set_config('jsonformat', $jsonformat ? 1 : 0, 'logstore_database');
-
-        $dbman = $DB->get_manager();
-        $this->assertTrue($dbman->table_exists('logstore_standard_log'));
-        $DB->delete_records('logstore_standard_log');
-
-        $this->setAdminUser();
-        $user1 = $this->getDataGenerator()->create_user();
-        $user2 = $this->getDataGenerator()->create_user();
-        $course1 = $this->getDataGenerator()->create_course();
-        $module1 = $this->getDataGenerator()->create_module('resource', array('course' => $course1));
-        $course2 = $this->getDataGenerator()->create_course();
-        $module2 = $this->getDataGenerator()->create_module('resource', array('course' => $course2));
-
-        // Test all plugins are disabled by this command.
-        set_config('enabled_stores', '', 'tool_log');
-        $manager = get_log_manager(true);
-        $stores = $manager->get_readers();
-        $this->assertCount(0, $stores);
-
+    private function enable_logstore_database() {
+        global $CFG;
         // Fake the settings, we will abuse the standard plugin table here...
         set_config('dbdriver', $CFG->dblibrary . '/' . $CFG->dbtype, 'logstore_database');
         set_config('dbhost', $CFG->dbhost, 'logstore_database');
@@ -103,6 +76,42 @@ class logstore_database_store_testcase extends advanced_testcase {
         set_config('enabled_stores', 'logstore_database', 'tool_log');
         set_config('buffersize', 0, 'logstore_database');
         set_config('logguests', 1, 'logstore_database');
+    }
+
+    /**
+     * Tests log writing.
+     *
+     * @param bool $jsonformat True to test with JSON format
+     * @dataProvider test_log_writing_provider
+     * @throws moodle_exception
+     */
+    public function test_log_writing(bool $jsonformat) {
+        global $DB, $CFG;
+        $this->resetAfterTest();
+        $this->preventResetByRollback(); // Logging waits till the transaction gets committed.
+
+        // Apply JSON format system setting.
+        set_config('jsonformat', $jsonformat ? 1 : 0, 'logstore_database');
+
+        $dbman = $DB->get_manager();
+        $this->assertTrue($dbman->table_exists('logstore_standard_log'));
+        $DB->delete_records('logstore_standard_log');
+
+        $this->setAdminUser();
+        $user1 = $this->getDataGenerator()->create_user();
+        $user2 = $this->getDataGenerator()->create_user();
+        $course1 = $this->getDataGenerator()->create_course();
+        $module1 = $this->getDataGenerator()->create_module('resource', array('course' => $course1));
+        $course2 = $this->getDataGenerator()->create_course();
+        $module2 = $this->getDataGenerator()->create_module('resource', array('course' => $course2));
+
+        // Test all plugins are disabled by this command.
+        set_config('enabled_stores', '', 'tool_log');
+        $manager = get_log_manager(true);
+        $stores = $manager->get_readers();
+        $this->assertCount(0, $stores);
+
+        $this->enable_logstore_database();
         $manager = get_log_manager(true);
 
         $stores = $manager->get_readers();
@@ -322,5 +331,30 @@ class logstore_database_store_testcase extends advanced_testcase {
         foreach ($expectedreports as $expectedreport) {
             $this->assertContains($expectedreport, $reports);
         }
+    }
+
+    /**
+     * Test get_max_record_id to return the max record if from the log table.
+     *
+     * @covers ::get_max_record_id()
+     */
+    public function test_get_max_record_id() {
+        $this->resetAfterTest();
+        $this->preventResetByRollback();
+
+        // Configure log store.
+        $this->enable_logstore_database();
+        $manager = get_log_manager();
+        $stores = $manager->get_readers();
+        $store = $stores['logstore_database'];
+
+        // Create a user and store the event.
+        $this->getDataGenerator()->create_user();
+        $store->flush();
+
+        // Assert that we got numeral event id.
+        $actual = $store->get_max_record_id();
+        $this->assertNotNull($actual);
+        $this->assertGreaterThan(0, $actual);
     }
 }

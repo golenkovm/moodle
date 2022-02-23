@@ -59,7 +59,7 @@ class report_loglive_table_log extends table_sql {
      *     - \core\log\sql_reader logreader: reader from which data will be fetched.
      *     - int edulevel: educational level.
      *     - string action: view action
-     *     - int date: Date from which logs to be viewed.
+     *     - int fromid: Record id from which logs to be viewed.
      */
     public function __construct($uniqueid, $filterparams = null) {
         parent::__construct($uniqueid);
@@ -304,20 +304,17 @@ class report_loglive_table_log extends table_sql {
      * @param bool $useinitialsbar do you want to use the initials bar.
      */
     public function query_db($pagesize, $useinitialsbar = true) {
-
-        $joins = array();
-        $params = array();
-
         // Set up filtering.
-        if (!empty($this->filterparams->courseid)) {
-            $joins[] = "courseid = :courseid";
-            $params['courseid'] = $this->filterparams->courseid;
-        }
-
-        if (!empty($this->filterparams->date)) {
-            $joins[] = "timecreated > :date";
-            $params['date'] = $this->filterparams->date;
-        }
+        $joins = [
+            'courseid = :courseid',
+            'id > :fromid',
+            'id <= :toid',
+        ];
+        $params = [
+            'courseid' => $this->filterparams->courseid,
+            'fromid' => $this->filterparams->fromid,
+            'toid' => $this->filterparams->toid,
+        ];
 
         if (isset($this->filterparams->anonymous)) {
             $joins[] = "anonymous = :anon";

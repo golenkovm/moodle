@@ -261,4 +261,29 @@ class logstore_legacy_store_testcase extends advanced_testcase {
 
         $this->assertEquals(1, $DB->count_records('log'));
     }
+
+    /**
+     * Test get_max_record_id to return the max record if from the log table.
+     *
+     * @covers ::get_max_record_id()
+     */
+    public function test_get_max_record_id() {
+        $this->resetAfterTest();
+        $this->preventResetByRollback();
+
+        // Configure log store.
+        set_config('enabled_stores', 'logstore_legacy', 'tool_log');
+        set_config('loglegacy', 1, 'logstore_legacy');
+        $manager = get_log_manager();
+        $stores = $manager->get_readers();
+        $store = $stores['logstore_legacy'];
+
+        // Create a user and store the event.
+        $this->getDataGenerator()->create_user();
+
+        // Assert that we got numeral event id.
+        $actual = $store->get_max_record_id();
+        $this->assertNotNull($actual);
+        $this->assertGreaterThan(0, $actual);
+    }
 }

@@ -88,7 +88,7 @@ Y.extend(FetchLogs, Y.Base, {
         this.spinner.show(); // Show a loading icon.
         var data = {
             logreader: this.get('logreader'),
-            since: this.get('since'),
+            latestid: this.get('latestid'),
             page: this.get('page'),
             id: this.get('courseid')
         };
@@ -100,7 +100,7 @@ Y.extend(FetchLogs, Y.Base, {
             },
             data: data
         };
-        var url = M.cfg.wwwroot + '/report/loglive/loglive_ajax.php';
+        var url = M.cfg.wwwroot + '/report/loglive/loglive_ajax.php?XDEBUG_TRIGGER';
         Y.io(url, cfg);
     },
 
@@ -128,7 +128,7 @@ Y.extend(FetchLogs, Y.Base, {
             });
             return this;
         }
-        this.set('since', responseobject.until);
+        this.set('latestid', responseobject.latestid);
         var logs = responseobject.logs;
         var tbody = Y.one(SELECTORS.TBODY);
         var firstTr = null;
@@ -143,7 +143,7 @@ Y.extend(FetchLogs, Y.Base, {
             // Let us chop off some data from end of table to prevent really long pages.
             var oldChildren = tbody.get('children').slice(this.get('perpage'));
             oldChildren.remove();
-            Y.later(5000, this, 'removeHighlight', responseobject.until); // Remove highlighting from new rows.
+            Y.later(5000, this, 'removeHighlight'); // Remove highlighting from new rows.
         }
     },
 
@@ -152,8 +152,8 @@ Y.extend(FetchLogs, Y.Base, {
      *
      * @method removeHighlight
      */
-    removeHighlight: function(timeStamp) {
-        Y.all('.time' + timeStamp).removeClass(CSS.NEWROW);
+    removeHighlight: function() {
+        Y.all(SELECTORS.NEWROW).removeClass(CSS.NEWROW);
     },
 
     /**
@@ -184,13 +184,13 @@ Y.extend(FetchLogs, Y.Base, {
     NAME: 'fetchLogs',
     ATTRS: {
         /**
-         * time stamp from where the new logs needs to be fetched.
+         * The latest fetched record id.
          *
-         * @attribute since
-         * @default null
-         * @type String
+         * @attribute latestid
+         * @default 0
+         * @type int
          */
-        since: null,
+        latestid: 0,
 
         /**
          * courseid for which the logs are shown.

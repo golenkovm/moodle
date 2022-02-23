@@ -158,4 +158,15 @@ class store implements \tool_log\log\writer, \core\log\sql_internal_table_reader
         // this means we can return true here unless store has some extra switch.
         return true;
     }
+
+    /**
+     * Gets max record id from the log table.
+     *
+     * @return int Record id.
+     */
+    public function get_max_record_id(): ?int {
+        global $DB;
+        $sql = 'SELECT MAX(id) AS maxid FROM {logstore_standard_log}';
+        return $DB->get_record_sql($sql)->maxid;
+    }
 }
