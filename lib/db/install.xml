@@ -501,6 +501,7 @@
         <FIELD NAME="action" TYPE="char" LENGTH="40" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="url" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="info" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="timestored" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -511,6 +512,7 @@
         <INDEX NAME="action" UNIQUE="false" FIELDS="action"/>
         <INDEX NAME="userid-course" UNIQUE="false" FIELDS="userid, course"/>
         <INDEX NAME="cmid" UNIQUE="false" FIELDS="cmid"/>
+        <INDEX NAME="timestored" UNIQUE="false" FIELDS="timestored"/>
       </INDEXES>
     </TABLE>
     <TABLE NAME="log_queries" COMMENT="Logged database queries.">

@@ -25,7 +25,8 @@
 defined('MOODLE_INTERNAL') || die();
 
 function xmldb_logstore_standard_upgrade($oldversion) {
-    global $CFG;
+    global $CFG, $DB;
+    $dbman = $DB->get_manager();
 
     // Automatically generated Moodle v3.6.0 release upgrade line.
     // Put any upgrade step following this.
@@ -45,6 +46,23 @@ function xmldb_logstore_standard_upgrade($oldversion) {
 
     // Automatically generated Moodle v3.9.0 release upgrade line.
     // Put any upgrade step following this.
+
+    if ($oldversion < 2021052500.01) {
+        // Create timestored column.
+        $table = new xmldb_table('logstore_standard_log');
+        $field = new xmldb_field('timestored', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Create an index for timestored column.
+        $index = new \xmldb_index('timestored', XMLDB_INDEX_NOTUNIQUE, ['timestored']);
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        upgrade_plugin_savepoint(true, 2021052500.01, 'logstore', 'standard');
+    }
 
     return true;
 }

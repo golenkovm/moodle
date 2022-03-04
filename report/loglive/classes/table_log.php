@@ -315,7 +315,7 @@ class report_loglive_table_log extends table_sql {
         }
 
         if (!empty($this->filterparams->date)) {
-            $joins[] = "timecreated > :date";
+            $joins[] = "timestored > :date";
             $params['date'] = $this->filterparams->date;
         }
 

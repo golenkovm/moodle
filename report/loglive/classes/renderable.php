@@ -82,7 +82,7 @@ class report_loglive_renderable implements renderable {
      * @param string $order (optional) sortorder of fetched records
      */
     public function __construct($logreader = "", $course = 0, $url = "", $date = 0, $page = 0, $perpage = 100,
-                                $order = "timecreated DESC") {
+                                $order = "timestored DESC") {
 
         global $PAGE;
 

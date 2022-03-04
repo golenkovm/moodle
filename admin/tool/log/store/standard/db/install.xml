@@ -27,6 +27,7 @@
         <FIELD NAME="origin" TYPE="char" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="cli, cron, ws, etc."/>
         <FIELD NAME="ip" TYPE="char" LENGTH="45" NOTNULL="false" SEQUENCE="false" COMMENT="IP address"/>
         <FIELD NAME="realuserid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="real user id when logged-in-as"/>
+        <FIELD NAME="timestored" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -36,6 +37,7 @@
         <INDEX NAME="timecreated" UNIQUE="false" FIELDS="timecreated"/>
         <INDEX NAME="course-time" UNIQUE="false" FIELDS="courseid, anonymous, timecreated"/>
         <INDEX NAME="user-module" UNIQUE="false" FIELDS="userid, contextlevel, contextinstanceid, crud, edulevel, timecreated"/>
+        <INDEX NAME="timestored" UNIQUE="false" FIELDS="timestored"/>
       </INDEXES>
     </TABLE>
   </TABLES>

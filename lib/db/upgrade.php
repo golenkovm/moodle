@@ -4246,5 +4246,22 @@ privatefiles,moodle|/user/files.php';
         upgrade_main_savepoint(true, 2022030100.00);
     }
 
+    if ($oldversion < 2022030300.01) {
+        // Create timestored column.
+        $table = new xmldb_table('log');
+        $field = new xmldb_field('timestored', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Create an index for timestored column.
+        $index = new \xmldb_index('timestored', XMLDB_INDEX_NOTUNIQUE, ['timestored']);
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        upgrade_main_savepoint(true, 2022030300.01);
+    }
+
     return true;
 }
