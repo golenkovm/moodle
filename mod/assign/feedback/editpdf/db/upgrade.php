@@ -92,5 +92,34 @@ function xmldb_assignfeedback_editpdf_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2021060400, 'assignfeedback', 'editpdf');
     }
 
+    if ($oldversion < 2022032800) {
+        // Convert not yet converted submissions into adhoc tasks.
+        $rs = $DB->get_recordset('assignfeedback_editpdf_queue');
+        $nextruntime = time();
+        foreach ($rs as $record) {
+            $data = [
+                'submissionid' => $record->submissionid,
+                'submissionattempt' => $record->submissionattempt,
+            ];
+            $task = new assignfeedback_editpdf\task\convert_submission;
+            $task->set_custom_data($data);
+            $task->set_next_run_time($nextruntime);
+            \core\task\manager::queue_adhoc_task($task, true);
+
+            // Schedule one adhoc task per minute to make sure they won't smash cron after upgrade.
+            $nextruntime += MINSECS;
+        }
+        $rs->close();
+
+        // Drop 'assignfeedback_editpdf_queue' table.
+        $table = new xmldb_table('assignfeedback_editpdf_queue');
+        if ($dbman->table_exists($table)) {
+            $dbman->drop_table($table);
+        }
+
+        // Editpdf savepoint reached.
+        upgrade_plugin_savepoint(true, 2022032800, 'assignfeedback', 'editpdf');
+    }
+
     return true;
 }

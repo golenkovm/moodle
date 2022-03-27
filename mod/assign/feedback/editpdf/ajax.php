@@ -94,7 +94,20 @@ if ($action === 'pollconversions') {
         if (in_array($response->status, $completestatuslist)) {
             $submission = $assignment->get_user_submission($userid, false, $attemptnumber);
             if ($submission) {
-                $DB->delete_records('assignfeedback_editpdf_queue', array('submissionid' => $submission->id));
+                $data = [
+                    'submissionid' => "$submission->id",
+                    'submissionattempt' => "$attemptnumber",
+                ];
+                $task = new \assignfeedback_editpdf\task\convert_submission;
+                $task->set_custom_data($data);
+                $customdata = $DB->sql_like('customdata', ':customdata', false, false);
+                $select = "component = :component AND classname = :classname AND $customdata";
+                $params = [
+                    'component' => 'assignfeedback_editpdf',
+                    'classname' => '\assignfeedback_editpdf\task\convert_submission',
+                    'customdata' => $task->get_custom_data_as_string(),
+                ];
+                $DB->delete_records_select('task_adhoc', $select, $params);
             }
         }
     }
