@@ -193,5 +193,47 @@ class core_task_manager_testcase extends advanced_testcase {
         $this->assertEquals($expected, $result);
     }
 
+    /**
+     * Test adhoc task deletion.
+     *
+     * @covers ::remove_adhoc_tasks()
+     */
+    public function test_remove_adhoc_tasks() {
+        global $DB;
+        $this->resetAfterTest();
+
+        // Create privacy adhoc task.
+        $privacytask = new \tool_dataprivacy\task\process_data_request_task;
+        \core\task\manager::queue_adhoc_task($privacytask);
+
+        // Create a couple of test adhoc tasks with course id passed as a number.
+        $testtask1 = new \core\task\adhoc_test_task();
+        $testtask1->set_custom_data(['courseid' => 10]);
+        \core\task\manager::queue_adhoc_task($testtask1);
+        \core\task\manager::queue_adhoc_task($testtask1);
+
+        // Create two more adhoc task with course id passed as a string.
+        $testtask2 = new \core\task\adhoc_test_task();
+        $testtask2->set_custom_data(['courseid' => "10"]);
+        \core\task\manager::queue_adhoc_task($testtask2);
+        $testtask2->set_custom_data(['courseid' => '10']);
+        \core\task\manager::queue_adhoc_task($testtask2);
+
+        // Confirm the total number of tasks.
+        $this->assertEquals(5, $DB->count_records('task_adhoc'));
+
+        // Delete privacy task from the queue.
+        \core\task\manager::remove_adhoc_tasks($privacytask);
+        $this->assertEquals(4, $DB->count_records('task_adhoc'));
+        $this->assertEquals(0, $DB->count_records('task_adhoc', ['component' => 'tool_dataprivacy']));
+
+        // Delete test task with course id passed as a string.
+        \core\task\manager::remove_adhoc_tasks($testtask2);
+        $this->assertEquals(2, $DB->count_records('task_adhoc'));
+
+        // Delete remaining two tasks.
+        \core\task\manager::remove_adhoc_tasks($testtask1);
+        $this->assertEquals(0, $DB->count_records('task_adhoc'));
+    }
 }
 

@@ -213,6 +213,28 @@ class manager {
     }
 
     /**
+     * Remove adhoc task records that match component, classname and customdata of the task object provided.
+     *
+     * @param \core\task\adhoc_task $task Adhoc task object
+     * @return void
+     */
+    public static function remove_adhoc_tasks(adhoc_task $task): void {
+        global $DB;
+
+        $params = [
+            'component' => $task->get_component(),
+            'classname' => self::get_canonical_class_name(get_class($task)),
+            'customdata' => $task->get_custom_data_as_string(),
+        ];
+
+        $customdatasql = $DB->sql_like('customdata', ':customdata', false, false);
+        $select = "component = :component AND classname = :classname AND $customdatasql";
+
+        // Remove all adhoc tasks that fall into conditions.
+        $DB->delete_records_select('task_adhoc', $select, $params);
+    }
+
+    /**
      * Change the default configuration for a scheduled task.
      * The list of scheduled tasks is taken from {@link load_scheduled_tasks_for_component}.
      *
