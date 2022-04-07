@@ -229,6 +229,8 @@ defined or can't be applied.
   from ALL users, including admins, where required on pages with multi region layouts exist, such as "My courses".
 * The \core\task\manager::get_queued_adhoc_task_record() protected method was renamed to get_queued_adhoc_task_record() and
   now it returns all adhoc task records that match requested conditions, not just the first one.
+* Removed $CFG->conversionattemptlimit setting from config.php. assignfeedback_editpdf\task\convert_submissions task
+  is now replaced with adhoc tasks with standard fail delay approach.
 
 === 3.11.4 ===
 * A new option dontforcesvgdownload has been added to the $options parameter of the send_file() function.
