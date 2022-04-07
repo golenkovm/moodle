@@ -94,7 +94,13 @@ if ($action === 'pollconversions') {
         if (in_array($response->status, $completestatuslist)) {
             $submission = $assignment->get_user_submission($userid, false, $attemptnumber);
             if ($submission) {
-                $DB->delete_records('assignfeedback_editpdf_queue', array('submissionid' => $submission->id));
+                $data = [
+                    'submissionid' => (string)$submission->id,
+                    'submissionattempt' => (string)$attemptnumber,
+                ];
+                $task = new \assignfeedback_editpdf\task\convert_submission;
+                $task->set_custom_data($data);
+                \core\task\manager::remove_adhoc_tasks($task);
             }
         }
     }
