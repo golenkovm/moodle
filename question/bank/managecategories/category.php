@@ -107,7 +107,13 @@ if ($param->delete) {
 
     helper::question_remove_stale_questions_from_category($param->delete);
 
-    $questionstomove = $DB->count_records('question_bank_entries', ['questioncategoryid' => $param->delete]);
+    $sql = "SELECT COUNT(1)
+              FROM {question} q
+              JOIN {question_versions} qv ON qv.questionid = q.id
+              JOIN {question_bank_entries} qbe ON qbe.id = qv.questionbankentryid
+             WHERE qbe.questioncategoryid = :questioncategoryid
+               AND (q.parent = 0 OR q.parent = q.id)";
+    $questionstomove = $DB->count_records_sql($sql, ['questioncategoryid' => $param->delete]);
 
     // Second pass, if we still have questions to move, setup the form.
     if ($questionstomove) {
