@@ -125,22 +125,22 @@ class manager {
     }
 
     /**
-     * Checks if the task with the same classname, component and customdata is already scheduled
+     * Checks if the task with the same user, classname, component and customdata is already scheduled
      *
      * @param adhoc_task $task
      * @return bool
      */
     protected static function task_is_scheduled($task) {
-        return false !== self::get_queued_adhoc_task_record($task);
+        return !empty(self::get_queued_adhoc_task_records($task));
     }
 
     /**
-     * Checks if the task with the same classname, component and customdata is already scheduled
+     * Returns records of adhoc tasks with the same user, classname, component and customdata.
      *
      * @param adhoc_task $task
-     * @return bool
+     * @return array
      */
-    protected static function get_queued_adhoc_task_record($task) {
+    protected static function get_queued_adhoc_task_records($task) {
         global $DB;
 
         $record = self::record_from_adhoc_task($task);
@@ -152,13 +152,13 @@ class manager {
             $params[] = $record->userid;
             $sql .= " AND userid = ? ";
         }
-        return $DB->get_record_select('task_adhoc', $sql, $params);
+        return $DB->get_records_select('task_adhoc', $sql, $params);
     }
 
     /**
-     * Schedule a new task, or reschedule an existing adhoc task which has matching data.
+     * Schedule a new task, or reschedule an existing adhoc tasks which have matching data.
      *
-     * Only a task matching the same user, classname, component, and customdata will be rescheduled.
+     * Only tasks matching the same user, classname, component, and customdata will be rescheduled.
      * If these values do not match exactly then a new task is scheduled.
      *
      * @param \core\task\adhoc_task $task - The new adhoc task information to store.
@@ -167,11 +167,13 @@ class manager {
     public static function reschedule_or_queue_adhoc_task(adhoc_task $task) : void {
         global $DB;
 
-        if ($existingrecord = self::get_queued_adhoc_task_record($task)) {
-            // Only update the next run time if it is explicitly set on the task.
-            $nextruntime = $task->get_next_run_time();
-            if ($nextruntime && ($existingrecord->nextruntime != $nextruntime)) {
-                $DB->set_field('task_adhoc', 'nextruntime', $nextruntime, ['id' => $existingrecord->id]);
+        if ($existingrecords = self::get_queued_adhoc_task_records($task)) {
+            foreach ($existingrecords as $existingrecord) {
+                // Only update the next run time if it is explicitly set on the task.
+                $nextruntime = $task->get_next_run_time();
+                if ($nextruntime && ($existingrecord->nextruntime != $nextruntime)) {
+                    $DB->set_field('task_adhoc', 'nextruntime', $nextruntime, ['id' => $existingrecord->id]);
+                }
             }
         } else {
             // There is nothing queued yet. Just queue as normal.
@@ -210,6 +212,27 @@ class manager {
         $result = $DB->insert_record('task_adhoc', $record);
 
         return $result;
+    }
+
+    /**
+     * Remove adhoc task records that match component, classname and customdata of the task object provided.
+     * Kindly check if a lock could be acquired before deleting a task. Otherwise, there is a risk of deleting
+     * an adhoc that is currently in progress.
+     *
+     * @param \core\task\adhoc_task $task Adhoc task object
+     * @return void
+     */
+    public static function remove_adhoc_tasks(adhoc_task $task): void {
+        global $DB;
+        $cronlockfactory = \core\lock\lock_config::get_lock_factory('cron');
+        if ($records = self::get_queued_adhoc_task_records($task)) {
+            foreach ($records as $record) {
+                if ($lock = $cronlockfactory->get_lock('adhoc_' . $record->id, 0)) {
+                    $DB->delete_records('task_adhoc', ['id' => $record->id]);
+                    $lock->release();
+                }
+            }
+        }
     }
 
     /**
