@@ -67,7 +67,23 @@ abstract class adhoc_task extends task_base {
      * @param mixed $customdata (anything that can be handled by json_encode)
      */
     public function set_custom_data($customdata) {
-        $this->customdata = json_encode($customdata);
+        $this->customdata = json_encode($this->sort_custom_data($customdata));
+    }
+
+    /**
+     * Sort custom data alphabetically if possible.
+     * @param mixed $customdata Custom data to be sorted.
+     * @return mixed Sorted custom data or original data if it is not an array.
+     */
+    protected function sort_custom_data($customdata) {
+        if (is_array($customdata)) {
+            ksort($customdata, SORT_STRING);
+            foreach ($customdata as $key => $value) {
+                $value = $this->sort_custom_data($value);
+                $sorteddata[$key] = $value;
+            }
+        }
+        return $sorteddata ?? $customdata;
     }
 
     /**
@@ -75,7 +91,15 @@ abstract class adhoc_task extends task_base {
      * @param string $customdata json_encoded string
      */
     public function set_custom_data_as_string($customdata) {
-        $this->customdata = $customdata;
+        if (!empty($customdata)) {
+            $customdata = json_decode($customdata);
+
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                debugging('Failed to decode JSON string!');
+            }
+        }
+
+        $this->set_custom_data($customdata);
     }
 
     /**

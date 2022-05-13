@@ -470,17 +470,17 @@ class core_adhoc_task_testcase extends advanced_testcase {
         // Create adhoc tasks.
         $task1 = new \core\task\adhoc_test_task();
         $task1->set_next_run_time(1510000000);
-        $task1->set_custom_data_as_string('Task 1');
+        $task1->set_custom_data_as_string(json_encode('Task 1'));
         \core\task\manager::queue_adhoc_task($task1);
 
         $task2 = new \core\task\adhoc_test_task();
         $task2->set_next_run_time(1520000000);
-        $task2->set_custom_data_as_string('Task 2');
+        $task2->set_custom_data_as_string(json_encode('Task 2'));
         \core\task\manager::queue_adhoc_task($task2);
 
         $task3 = new \core\task\adhoc_test_task();
         $task3->set_next_run_time(1520000000);
-        $task3->set_custom_data_as_string('Task 3');
+        $task3->set_custom_data_as_string(json_encode('Task 3'));
         \core\task\manager::queue_adhoc_task($task3);
 
         // Shuffle tasks.
@@ -495,15 +495,88 @@ class core_adhoc_task_testcase extends advanced_testcase {
 
         // Confirm, that tasks are sorted by nextruntime and then by id (ascending).
         $task = \core\task\manager::get_next_adhoc_task(time());
-        $this->assertEquals('Task 2', $task->get_custom_data_as_string());
         \core\task\manager::adhoc_task_complete($task);
+        $this->assertEquals('"Task 2"', $task->get_custom_data_as_string());
 
         $task = \core\task\manager::get_next_adhoc_task(time());
-        $this->assertEquals('Task 3', $task->get_custom_data_as_string());
         \core\task\manager::adhoc_task_complete($task);
+        $this->assertEquals('"Task 3"', $task->get_custom_data_as_string());
 
         $task = \core\task\manager::get_next_adhoc_task(time());
-        $this->assertEquals('Task 1', $task->get_custom_data_as_string());
         \core\task\manager::adhoc_task_complete($task);
+        $this->assertEquals('"Task 1"', $task->get_custom_data_as_string());
+    }
+
+    /**
+     * Test adhoc task alternative setter for custom data.
+     * @covers ::set_custom_data_as_string
+     */
+    public function test_set_custom_data_as_string() {
+        $this->resetAfterTest();
+        $task = new \core\task\adhoc_test_task();
+        $task->set_custom_data_as_string(json_encode('Task 1'));
+        $this->assertEquals('Task 1', $task->get_custom_data());
+        $this->assertEquals('"Task 1"', $task->get_custom_data_as_string());
+    }
+
+    /**
+     * Test that adhoc task alternative setter for custom data outputs a debugging
+     * message when custom data passed is not a JSON string.
+     * @covers ::set_custom_data_as_string
+     */
+    public function test_set_custom_data_as_string_outputs_debugging() {
+        $this->resetAfterTest();
+        $task = new \core\task\adhoc_test_task();
+        $task->set_custom_data_as_string('Task 1');
+        $this->assertDebuggingCalled('Failed to decode JSON string!');
+    }
+
+    /**
+     * Data provider for test_sort_custom_data().
+     *
+     * @return array
+     */
+    public function test_sort_custom_data_provider(): array {
+        return [
+            [123, '123'],
+            ['123', '"123"'],
+            ["123", '"123"'],
+            ['string', '"string"'],
+            ["string", '"string"'],
+            [true, 'true'],
+            [null, 'null'],
+            [new \stdClass(), '{}'],
+            [(object)['property1' => 'value1'], '{"property1":"value1"}'],
+            [(object)['property2' => 'value2', 'property1' => 'value1'], '{"property2":"value2","property1":"value1"}'],
+            [['value'], '["value"]'],
+            [['key' => 'value'], '{"key":"value"}'],
+            [[1 => 'value'], '{"1":"value"}'],
+            [[2 => 'value2', 1 => 'value1'], '{"1":"value1","2":"value2"}'],
+            [[4 => 'value4', 'key2' => 'value2', 1 => 'value1', 'key3' => 'value3'],
+                '{"1":"value1","4":"value4","key2":"value2","key3":"value3"}'],
+            [['id' => 123, 'bool' => false, 'string' => 'value3', 'array' => ['key2' => 'value2', 'key1' => 'value1']],
+                '{"array":{"key1":"value1","key2":"value2"},"bool":false,"id":123,"string":"value3"}'],
+        ];
+    }
+
+    /**
+     * Test adhoc task custom data sorting.
+     *
+     * @dataProvider test_sort_custom_data_provider
+     *
+     * @param mixed $actual Custom data
+     * @param string $expected Expected string stored as custom data.
+     * @return void
+     * @covers ::sort_custom_data
+     */
+    public function test_sort_custom_data($actual, $expected) {
+        $this->resetAfterTest();
+        $task = new \core\task\adhoc_test_task();
+        $task->set_custom_data($actual);
+        \core\task\manager::queue_adhoc_task($task);
+
+        $task = \core\task\manager::get_next_adhoc_task(time());
+        \core\task\manager::adhoc_task_complete($task);
+        $this->assertEquals($expected, $task->get_custom_data_as_string());
     }
 }
