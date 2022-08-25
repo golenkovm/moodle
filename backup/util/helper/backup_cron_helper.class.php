@@ -778,17 +778,39 @@ abstract class backup_cron_automated_helper {
      * intentional, since we cannot reliably determine if any modification was made or not.
      */
     protected static function is_course_modified($courseid, $since) {
+        global $DB;
         $logmang = get_log_manager();
         $readers = $logmang->get_readers('core\log\sql_reader');
-        $params = array('courseid' => $courseid, 'since' => $since);
 
         foreach ($readers as $readerpluginname => $reader) {
-            $where = "courseid = :courseid and timecreated > :since and crud <> 'r'";
+            $where = [
+                'courseid = :courseid',
+                'timecreated > :since',
+                'crud <> :r',
+            ];
 
-            // Prevent logs of prevous backups causing a false positive.
+            $params = [
+                'courseid' => $courseid,
+                'since' => $since,
+                'r' => 'r',
+            ];
+
+            // Prevent logs of previous backups causing a false positive.
             if ($readerpluginname != 'logstore_legacy') {
-                $where .= " and target <> 'course_backup'";
+                list($notinsql, $notinparams) = $DB->get_in_or_equal(['course_backup'], SQL_PARAMS_NAMED, 'coursebackup', false);
+                $where[] = 'target ' . $notinsql;
+                $params = array_merge($params, $notinparams);
             }
+
+            $excludeevents = get_config('backup', 'backup_auto_exclude_events');
+            if (!empty($excludeevents)) {
+                $excludeevents = explode(',', $excludeevents);
+                list($notinsql, $notinparams) = $DB->get_in_or_equal($excludeevents, SQL_PARAMS_NAMED, 'eventname', false);
+                $where[] = 'eventname ' . $notinsql;
+                $params = array_merge($params, $notinparams);
+            }
+
+            $where = implode(" AND ", $where);
 
             if ($reader->get_events_select_exists($where, $params)) {
                 return true;

@@ -63,7 +63,7 @@ class autocomplete extends \admin_setting_configmultiselect {
      * @param string $visiblename localised
      * @param string $description long localised info
      * @param array $defaultsetting array of selected items
-     * @param array $choices options for autocomplete field
+     * @param array|callable $choices options for autocomplete field
      * @param array $attributes settings for autocomplete field
      */
     public function __construct($name, $visiblename, $description, $defaultsetting, $choices, $attributes = null) {
