@@ -29,8 +29,8 @@ $tasks = array(
     array(
         'classname' => 'qtype_random\task\remove_unused_questions',
         'blocking' => 0,
-        'minute' => 'R',
-        'hour' => '*',
+        'minute' => '*/5',
+        'hour' => '1,2,3,4,5',
         'day' => '*',
         'month' => '*',
         'dayofweek' => '*'

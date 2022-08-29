@@ -49,5 +49,21 @@ function xmldb_qtype_random_upgrade($oldversion) {
     // Automatically generated Moodle v3.11.0 release upgrade line.
     // Put any upgrade step following this.
 
+    if ($oldversion < 2021051701) {
+
+        // Re-schedule the task even if it is customised.
+        $taskname = '\qtype_random\task\remove_unused_questions';
+        $currenttask = \core\task\manager::get_scheduled_task($taskname);
+        $defaulttask = \core\task\manager::get_default_scheduled_task($taskname);
+
+        $currenttask->set_minute($defaulttask->get_minute());
+        $currenttask->set_hour($defaulttask->get_hour());
+
+        \core\task\manager::configure_scheduled_task($currenttask);
+
+        // Random savepoint reached.
+        upgrade_plugin_savepoint(true, 2021051701, 'qtype', 'random');
+    }
+
     return true;
 }
