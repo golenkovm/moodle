@@ -52,6 +52,7 @@ $string['nogatewayselected'] = 'You first need to select a payment gateway.';
 $string['payments'] = 'Payments';
 $string['paymentaccount'] = 'Payment account';
 $string['paymentaccounts'] = 'Payment accounts';
+$string['pluginname'] = 'Payment';
 $string['privacy:metadata:database:payments'] = 'Information about the payments.';
 $string['privacy:metadata:database:payments:amount'] = 'The amount for the payment.';
 $string['privacy:metadata:database:payments:currency'] = 'The currency of the payment.';

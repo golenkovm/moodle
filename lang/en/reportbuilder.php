@@ -174,6 +174,7 @@ $string['noconditions'] = 'There are no conditions selected';
 $string['nofilters'] = 'There are no filters selected';
 $string['nosortablecolumns'] = 'There are no sortable columns';
 $string['or'] = 'or';
+$string['pluginname'] = 'Report builder';
 $string['privacy:metadata:audience'] = 'Report audience definitions';
 $string['privacy:metadata:audience:classname'] = 'The class used by the audience';
 $string['privacy:metadata:audience:configdata'] = 'Configuration data used by the audience';

@@ -319,6 +319,7 @@ $string['copyingsitefiles'] = 'Copying site files used in course';
 $string['copyinguserfiles'] = 'Copying user files';
 $string['copyingzipfile'] = 'Copying zip file';
 $string['copyrightnotice'] = 'Copyright notice';
+$string['core'] = 'Core';
 $string['coresystem'] = 'System';
 $string['cost'] = 'Cost';
 $string['costdefault'] = 'Default cost';

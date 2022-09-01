@@ -70,6 +70,7 @@ $string['nopermissionconfigure'] = 'You don\'t have permission to configure fiel
 $string['notchecked'] = 'Not checked';
 $string['otherfields'] = 'Other fields';
 $string['otherfieldsn'] = 'Other fields {$a}';
+$string['pluginname'] = 'Custom field';
 $string['privacy:metadata:customfield_data'] = 'Represents custom field data saved to a context';
 $string['privacy:metadata:customfield_data:charvalue'] = 'Data value when it is a character';
 $string['privacy:metadata:customfield_data:contextid'] = 'The ID of the context where the data was saved';
