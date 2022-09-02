@@ -23,6 +23,8 @@
  */
 
 use core_admin\local\settings\filesize;
+use core_admin\local\settings\autocomplete;
+use core\event\event_helper;
 
 $capabilities = array(
     'moodle/backup:backupcourse',
@@ -472,6 +474,28 @@ if ($hassiteconfig or has_any_capability($capabilities, $systemcontext)) {
         365 => new lang_string('numdays', '', 365)
     )));
     $temp->add(new admin_setting_configcheckbox('backup/backup_auto_skip_modif_prev', new lang_string('skipmodifprev', 'backup'), new lang_string('skipmodifprevhelp', 'backup'), 0));
+
+    $attributes = [
+        'manageurl' => new moodle_url('/report/eventlist/index.php'),
+        'managetext' => get_string('pluginname', 'report_eventlist'),
+        'multiple' => true,
+        'delimiter' => ',',
+    ];
+    $temp->add(new autocomplete('backup/backup_auto_exclude_events',
+        new lang_string('excludeevents', 'backup'),
+        new lang_string('excludeeventshelp', 'backup'),
+        [],
+        function() {
+            $choices = [];
+            $events = event_helper::get_all_events();
+            foreach ($events as $eventclass => $eventdetails) {
+                $choice = $eventdetails['eventname'] . ' (' . $eventdetails['eventclass'] . ')';
+                $choices[$eventclass] = $choice;
+            }
+            return $choices;
+        },
+        $attributes
+    ));
 
     // Automated defaults section.
     $temp->add(new admin_setting_heading('automatedsettings', new lang_string('automatedsettings','backup'), new lang_string('recyclebin_desc', 'backup')));
