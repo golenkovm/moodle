@@ -29,11 +29,8 @@ $eventname = required_param('eventname', PARAM_RAW);
 
 admin_externalpage_setup('reporteventlists');
 
-// Retrieve all events in a list.
-$completelist = report_eventlist_list_generator::get_all_events_list(false);
-
 // Check that $eventname is a valid event.
-if (!array_key_exists($eventname, $completelist)) {
+if (!\core\event\event_helper::event_exists($eventname)) {
     throw new \moodle_exception('errorinvalidevent', 'report_eventlist');
 }
 
