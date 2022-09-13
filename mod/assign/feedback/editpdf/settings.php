@@ -38,6 +38,10 @@ $setting = new admin_setting_configstoredfile($name, $title, $description, 'stam
     array('maxfiles' => 8, 'accepted_types' => array('image')));
 $settings->add($setting);
 
+$settings->add(new admin_setting_configcheckbox('assignfeedback_editpdf/flatten',
+    new lang_string('flatten', 'assignfeedback_editpdf'),
+    new lang_string('flatten_help', 'assignfeedback_editpdf'), 0));
+
 // Ghostscript setting.
 $systempathslink = new moodle_url('/admin/settings.php', array('section' => 'systempaths'));
 $systempathlink = html_writer::link($systempathslink, get_string('systempaths', 'admin'));

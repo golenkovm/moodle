@@ -666,18 +666,21 @@ class pdf extends TcpdfFpdi {
         }
         $pdf->Close(); // PDF loaded and never saved/outputted needs to be closed.
 
-        if ($pagecount > 0) {
+        $flatten = get_config('assignfeedback_editpdf', 'flatten');
+
+        if ($pagecount > 0 && !$flatten) {
             // PDF is already valid and can be read by tcpdf.
             return $tempsrc;
         }
 
         $temparea = make_request_directory();
         $tempdst = $temparea . "/target.pdf";
+        $preserveannots = empty($flatten) ? '' : '-dPreserveAnnots=false';
 
         $gsexec = \escapeshellarg($CFG->pathtogs);
         $tempdstarg = \escapeshellarg($tempdst);
         $tempsrcarg = \escapeshellarg($tempsrc);
-        $command = "$gsexec -q -sDEVICE=pdfwrite -dSAFER -dBATCH -dNOPAUSE -sOutputFile=$tempdstarg $tempsrcarg";
+        $command = "$gsexec -q -sDEVICE=pdfwrite $preserveannots -dSAFER -dBATCH -dNOPAUSE -sOutputFile=$tempdstarg $tempsrcarg";
         exec($command);
         if (!file_exists($tempdst)) {
             // Something has gone wrong in the conversion.

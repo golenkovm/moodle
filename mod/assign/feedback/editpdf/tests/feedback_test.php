@@ -515,4 +515,37 @@ class feedback_test extends \advanced_testcase {
         // No modification.
         $this->assertFalse($plugin->is_feedback_modified($grade, $data));
     }
+
+    /**
+     * Test that ensure_pdf_file_compatible() flattens a multi-layer PDF file.
+     *
+     * @covers pdf::ensure_pdf_file_compatible()
+     */
+    public function test_ensure_pdf_file_compatible_flatten() {
+        global $CFG;
+        $this->require_ghostscript();
+        $this->resetAfterTest();
+
+        $originalpdfpath = $CFG->dirroot . '/mod/assign/feedback/editpdf/tests/fixtures/multilayer.pdf';
+        $originalpdf = new pdf();
+        $originalpdf->load_pdf($originalpdfpath);
+
+        $noannotspdfpath = pdf::ensure_pdf_file_compatible($originalpdfpath);
+        $noannotspdf = new pdf();
+        $noannotspdf->load_pdf($noannotspdfpath);
+
+        set_config('flatten', 1, 'assignfeedback_editpdf');
+        $flattenedpdfpath = pdf::ensure_pdf_file_compatible($originalpdfpath);
+        $flattenedpdf = new pdf();
+        $flattenedpdf->load_pdf($flattenedpdfpath);
+
+        $this->assertEquals($originalpdfpath, $noannotspdfpath);
+        $this->assertNotEquals($originalpdfpath, $flattenedpdfpath);
+        $this->assertNotFalse($flattenedpdfpath);
+        // TODO: Add some extra assertions on flattened PDF to make sure that annotations were flattened.
+
+        $originalpdf->Close();
+        $noannotspdf->Close();
+        $flattenedpdf->Close();
+    }
 }
