@@ -26,6 +26,7 @@ namespace mod_forum\local\exporters;
 
 defined('MOODLE_INTERNAL') || die();
 
+use core_grades\component_gradeitem;
 use mod_forum\local\entities\forum as forum_entity;
 use mod_forum\local\exporters\post as post_exporter;
 use core\external\exporter;
@@ -66,6 +67,7 @@ class forum extends exporter {
                 'type' => [
                     'groupmode' => ['type' => PARAM_INT],
                     'gradingenabled' => ['type' => PARAM_BOOL],
+                    'gradeishidden' => ['type' => PARAM_BOOL],
                 ],
             ],
             'userstate' => [
@@ -117,12 +119,21 @@ class forum extends exporter {
         $vaultfactory = $this->related['vaultfactory'];
         $discussionvault = $vaultfactory->get_discussions_in_forum_vault();
 
+        $componentgradeitem = component_gradeitem::instance('mod_forum', $this->forum->get_context(), 'forum');
+
+        if ($this->forum->is_grading_enabled() && $gradeitem = $componentgradeitem->get_grade_item()) {
+            $gradeishidden = $gradeitem->is_hidden();
+        } else {
+            $gradeishidden = true;
+        }
+
         return [
             'id' => $this->forum->get_id(),
             'name' => $this->forum->get_name(),
             'state' => [
                 'groupmode' => $this->forum->get_effective_group_mode(),
-                'gradingenabled' => $this->forum->is_grading_enabled()
+                'gradingenabled' => $this->forum->is_grading_enabled(),
+                'gradeishidden' => $gradeishidden,
             ],
             'userstate' => [
                 'tracked' => forum_tp_is_tracked($this->get_forum_record(), $this->related['user']),

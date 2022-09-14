@@ -77,9 +77,9 @@
             {{/forum.state.gradingenabled}}
         {{/forum.capabilities.grade}}
         {{^forum.capabilities.grade}}
-            {{#forum.state.gradingenabled}}
+            {{^forum.state.gradeishidden}}
                 {{> mod_forum/grades/view_grade_button }}
-            {{/forum.state.gradingenabled}}
+            {{/forum.state.gradeishidden}}
         {{/forum.capabilities.grade}}
     </div>
     {{#forum.capabilities.create}}

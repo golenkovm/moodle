@@ -136,6 +136,11 @@ class fetch extends external_api {
 
         // Set up some items we need to return on other interfaces.
         $gradegrade = \grade_grade::fetch(['itemid' => $gradeitem->get_grade_item()->id, 'userid' => $gradeduser->id]);
+
+        if ($gradegrade->is_hidden()) {
+            throw new coding_exception("Grade item is hidden");
+        }
+
         $gradername = $gradegrade ? fullname(\core_user::get_user($gradegrade->usermodified)) : null;
         $maxgrade = (int) $gradeitem->get_grade_item()->grademax;
 
