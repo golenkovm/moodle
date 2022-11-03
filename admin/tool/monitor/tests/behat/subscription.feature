@@ -19,6 +19,9 @@ Feature: tool_monitor_subscriptions
       | teacher1 | C2 | teacher |
       | teacher2 | C1 | teacher |
       | teacher2 | C2 | editingteacher |
+    And the following config values are set as admin:
+      | debug | 0 |
+      | debugdisplay | 0 |
     And I log in as "admin"
     And I navigate to "Reports > Event monitoring rules" in site administration
     And I click on "Enable" "link"

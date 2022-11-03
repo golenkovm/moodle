@@ -9,6 +9,9 @@ Feature: Verify the breadcrumbs in different event monitor site administration p
 
   Background:
     Given I log in as "admin"
+    And the following config values are set as admin:
+      | debug | 0 |
+      | debugdisplay | 0 |
 
   Scenario: Verify the breadcrumbs in event monitoring page by visiting add a new rule, edit a rule and delete rule pages as an admin
     Given I navigate to "Reports > Event monitoring rules" in site administration

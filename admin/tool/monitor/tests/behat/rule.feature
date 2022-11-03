@@ -14,6 +14,9 @@ Feature: tool_monitor_rule
     And the following "course enrolments" exist:
       | user | course | role |
       | teacher1 | C1 | editingteacher |
+    And the following config values are set as admin:
+      | debug | 0 |
+      | debugdisplay | 0 |
     And I log in as "admin"
     And I navigate to "Reports > Event monitoring rules" in site administration
     And I click on "Enable" "link"
