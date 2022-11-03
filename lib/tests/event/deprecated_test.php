@@ -30,9 +30,14 @@ class deprecated_test extends \advanced_testcase {
      * Test event properties and methods.
      */
     public function test_deprecated_course_module_instances_list_viewed_events() {
+        global $CFG;
+        $this->resetAfterTest();
 
-        // Make sure the abstract class course_module_instances_list_viewed generates a debugging notice.
+        // Turn off debugging as deprecated events fire warnings.
+        $CFG->debug = 0;
+
+        // Make sure the abstract class course_module_instances_list_viewed is deprecated.
         require_once(__DIR__ . '/../fixtures/event_mod_badfixtures.php');
-        $this->assertDebuggingCalled(null, DEBUG_DEVELOPER);
+        $this->assertTrue(\mod_unittests\event\course_module_instances_list_viewed::is_deprecated());
     }
 }
