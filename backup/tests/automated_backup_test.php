@@ -348,6 +348,66 @@ class automated_backup_test extends \advanced_testcase {
             $output);
         \core\task\manager::adhoc_task_complete($task);
     }
+
+    /**
+     * Test that backup_auto_exclude_events config can be used to skip some courses.
+     * @covers ::run_automated_backup()
+     */
+    public function test_backup_auto_exclude_events_config() {
+        global $DB;
+
+        $this->preventResetByRollback();
+        set_config('backup_auto_active', true, 'backup');
+        set_config('backup_auto_weekdays', '1111111', 'backup');
+        set_config('backup_auto_skip_modif_days', 10, 'backup');
+        set_config('buffersize', 0, 'logstore_standard');
+        set_config('enabled_stores', 'logstore_standard', 'tool_log');
+        get_log_manager(true);
+
+        $awhileago = 1650000000;
+        $user = $this->getDataGenerator()->create_user();
+        $course = $this->getDataGenerator()->create_course();
+        $courseid = $course->id;
+        $course->timemodified = $awhileago;
+        $DB->update_record('course', $course);
+        $DB->execute('UPDATE {logstore_standard_log} SET timecreated = ' . $awhileago);
+
+        // Mock last successful auto backup.
+        $backupcourse = (object) [
+            'courseid' => $courseid,
+            'laststatus' => backup_cron_automated_helper::BACKUP_STATUS_OK,
+            'laststarttime' => $awhileago,
+            'lastendtime' => $awhileago,
+            'nextstarttime' => $awhileago,
+        ];
+        $backupcourse->id = $DB->insert_record('backup_courses', $backupcourse);
+
+        // Test that the course is not scheduled for backup as it was not modified.
+        ob_start();
+        backup_cron_automated_helper::run_automated_backup();
+        $output = ob_get_clean();
+        $this->assertStringContainsString("Skipping course id $courseid: Not modified in the past 10 days", $output);
+
+        // Reset last auto backup state and dates.
+        $DB->update_record('backup_courses', $backupcourse);
+
+        // Enrol a user and test that the course is scheduled for backup (due to user enrolment).
+        $this->getDataGenerator()->enrol_user($user->id, $course->id);
+        ob_start();
+        backup_cron_automated_helper::run_automated_backup();
+        $output = ob_get_clean();
+        $this->assertStringContainsString("Putting backup of course id $courseid in adhoc task queue", $output);
+
+        // Reset last auto backup state and dates.
+        $DB->update_record('backup_courses', $backupcourse);
+
+        // Exclude user_enrolment_created and role_assigned events and test that the course is not scheduled for backup.
+        set_config('backup_auto_exclude_events', '\core\event\role_assigned,\core\event\user_enrolment_created', 'backup');
+        ob_start();
+        backup_cron_automated_helper::run_automated_backup();
+        $output = ob_get_clean();
+        $this->assertStringContainsString("Skipping course id $courseid: Not modified in the past 10 days", $output);
+    }
 }
 
 /**
