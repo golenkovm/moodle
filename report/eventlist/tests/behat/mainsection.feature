@@ -4,6 +4,11 @@ Feature: Page contains a list of events
   As a user
   I need to check the page contents
 
+  Background:
+    Given the following config values are set as admin:
+      | debug | 0 |
+      | debugdisplay | 0 |
+
   @javascript
   Scenario: Event list page is viewable and filtering works
     Given I log in as "admin"

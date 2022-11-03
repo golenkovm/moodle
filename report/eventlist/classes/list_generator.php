@@ -14,15 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Event documentation
- *
- * @package   report_eventlist
- * @copyright 2014 Adrian Greeve <adrian@moodle.com>
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
-defined('MOODLE_INTERNAL') || die();
+use core\event\event_helper;
 
 /**
  * Class for returning system event information.
@@ -36,49 +28,15 @@ class report_eventlist_list_generator {
     /**
      * Convenience method. Returns all of the core events either with or without details.
      *
-     * @param bool $detail True will return details, but no abstract classes, False will return all events, but no details.
      * @return array All events.
      */
-    public static function get_all_events_list($detail = true) {
-        global $CFG;
-
-        // Disable developer debugging as deprecated events will fire warnings.
-        // Setup backup variables to restore the following settings back to what they were when we are finished.
-        $debuglevel          = $CFG->debug;
-        $debugdisplay        = $CFG->debugdisplay;
-        $debugdeveloper      = $CFG->debugdeveloper;
-        $CFG->debug          = 0;
-        $CFG->debugdisplay   = false;
-        $CFG->debugdeveloper = false;
-
-        // List of exceptional events that will cause problems if displayed.
-        $eventsignore = [
-            \core\event\unknown_logged::class,
-            \logstore_legacy\event\legacy_logged::class,
-        ];
-
+    public static function get_all_events_list() {
         $eventinformation = [];
+        $events = event_helper::get_all_events();
 
-        $events = core_component::get_component_classes_in_namespace(null, 'event');
-        foreach (array_keys($events) as $event) {
-            // We need to filter all classes that extend event base, or the base class itself.
-            if (is_a($event, \core\event\base::class, true) && !in_array($event, $eventsignore)) {
-                if ($detail) {
-                    $reflectionclass = new ReflectionClass($event);
-                    if (!$reflectionclass->isAbstract()) {
-                        $eventinformation = self::format_data($eventinformation, "\\${event}");
-                    }
-                } else {
-                    $parts = explode('\\', $event);
-                    $eventinformation["\\${event}"] = array_shift($parts);
-                }
-            }
+        foreach ($events as $event) {
+            $eventinformation[] = self::format_data($event);
         }
-
-        // Now enable developer debugging as event information has been retrieved.
-        $CFG->debug          = $debuglevel;
-        $CFG->debugdisplay   = $debugdisplay;
-        $CFG->debugdeveloper = $debugdeveloper;
 
         return $eventinformation;
     }
@@ -283,54 +241,32 @@ class report_eventlist_list_generator {
     }
 
     /**
-     * Returns the event data list section with url links and other formatting.
+     * Returns the event data with url links and other formatting.
      *
      * @param array $eventdata The event data list section.
-     * @param string $eventfullpath Full path to the events for this plugin / subplugin.
-     * @return array The event data list section with additional formatting.
+     * @return array The event data with additional formatting.
      */
-    private static function format_data($eventdata, $eventfullpath) {
-        // Get general event information.
-        $eventdata[$eventfullpath] = $eventfullpath::get_static_info();
+    private static function format_data($eventdata) {
         // Create a link for further event detail.
-        $url = new \moodle_url('eventdetail.php', array('eventname' => $eventfullpath));
-        $link = \html_writer::link($url, $eventfullpath::get_name_with_info());
-        $eventdata[$eventfullpath]['fulleventname'] = \html_writer::span($link);
-        $eventdata[$eventfullpath]['fulleventname'] .= \html_writer::empty_tag('br');
-        $eventdata[$eventfullpath]['fulleventname'] .= \html_writer::span($eventdata[$eventfullpath]['eventname'],
+        $url = new \moodle_url('eventdetail.php', array('eventname' => $eventdata['eventclass']));
+        $link = \html_writer::link($url, $eventdata['eventname']);
+        $eventdata['fulleventname'] = \html_writer::span($link);
+        $eventdata['fulleventname'] .= \html_writer::empty_tag('br');
+        $eventdata['fulleventname'] .= \html_writer::span($eventdata['eventclass'],
                 'report-eventlist-name');
 
-        $eventdata[$eventfullpath]['crud'] = self::get_crud_string($eventdata[$eventfullpath]['crud']);
-        $eventdata[$eventfullpath]['edulevel'] = self::get_edulevel_string($eventdata[$eventfullpath]['edulevel']);
-        $eventdata[$eventfullpath]['legacyevent'] = $eventfullpath::get_legacy_eventname();
-
-        // Mess around getting since information.
-        $ref = new \ReflectionClass($eventdata[$eventfullpath]['eventname']);
-        $eventdocbloc = $ref->getDocComment();
-        $sincepattern = "/since\s*Moodle\s([0-9]+.[0-9]+)/i";
-        preg_match($sincepattern, $eventdocbloc, $result);
-        if (isset($result[1])) {
-            $eventdata[$eventfullpath]['since'] = $result[1];
-        } else {
-            $eventdata[$eventfullpath]['since'] = null;
-        }
-
-        // Human readable plugin information to go with the component.
-        $pluginstring = explode('\\', $eventfullpath);
-        if ($pluginstring[1] !== 'core') {
-            $component = $eventdata[$eventfullpath]['component'];
-            $manager = get_string_manager();
-            if ($manager->string_exists('pluginname', $pluginstring[1])) {
-                $eventdata[$eventfullpath]['component'] = \html_writer::span(get_string('pluginname', $pluginstring[1]));
-            }
-        }
+        $eventdata['crud'] = self::get_crud_string($eventdata['crud']);
+        $eventdata['edulevel'] = self::get_edulevel_string($eventdata['edulevel']);
 
         // Raw event data to be used to sort the "Event name" column.
-        $eventdata[$eventfullpath]['raweventname'] = $eventfullpath::get_name_with_info() . ' ' . $eventdata[$eventfullpath]['eventname'];
+        $eventdata['raweventname'] = $eventdata['eventname'] . ' ' . $eventdata['eventclass'];
+
+        $eventdata['eventname'] = $eventdata['eventclass'];
+        $eventdata['component'] = $eventdata['componentname']->out();
 
         // Unset information that is not currently required.
-        unset($eventdata[$eventfullpath]['action']);
-        unset($eventdata[$eventfullpath]['target']);
+        unset($eventdata['action']);
+        unset($eventdata['target']);
         return $eventdata;
     }
 }
