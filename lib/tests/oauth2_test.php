@@ -551,7 +551,15 @@ class oauth2_test extends \advanced_testcase {
         $internalfieldlist = $userfieldmapping->get_internalfields();
 
         // Get user fields.
-        $userfields = array_merge(\core_user::AUTHSYNCFIELDS, ['picture', 'username']);
+        $userfields = [];
+        $fields = array_merge(\core_user::AUTHSYNCFIELDS, ['picture', 'username']);
+        $combinedfields = array_combine($fields, $fields);
+        $withprofilefields = array_merge(['' => $combinedfields], get_profile_field_list());
+        array_walk_recursive($withprofilefields,
+            function($value, $key) use (&$userfields) {
+                $userfields[] = $key;
+            }
+        );
 
         // Internal fields and user fields must exact same.
         $this->assertEquals($userfields, $internalfieldlist);
