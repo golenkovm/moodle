@@ -51,6 +51,8 @@ $student = $DB->get_record('user', array('id' => $attemptobj->get_userid()));
 $accessmanager = $attemptobj->get_access_manager(time());
 $options = $attemptobj->get_display_options(true);
 
+$page = $attemptobj->get_question_page($slot);
+$attemptobj->get_html_head_contributions($page);
 $PAGE->set_pagelayout('popup');
 $PAGE->set_title(get_string('reviewofquestion', 'quiz', array(
         'question' => format_string($attemptobj->get_question_name($slot)),
