@@ -18,6 +18,7 @@ namespace core_sms\task;
 
 use core\task\adhoc_task;
 use core_sms\message;
+use core_sms\message_status;
 
 /**
  * Ad-hoc task to send an SMS.
@@ -39,10 +40,16 @@ class send_sms_task extends adhoc_task {
         $message = $manager->get_message(
             filter: ['id' => $smsdata->messageid],
         );
-        $manager->send_message(
+        $message = $manager->send_message(
             message: $message,
             async: false,
         );
+        $status = $message?->status;
+        mtrace("SMS send status: " . ($status?->value ?? message_status::UNKNOWN->value));
+        if ($status === message_status::GATEWAY_NOT_AVAILABLE) {
+            mtrace("SMS gateway unavailable - task will retry");
+            throw new \moodle_exception('SMS Gateway is not available');
+        }
 
     }
 
