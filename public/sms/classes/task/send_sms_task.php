@@ -45,12 +45,18 @@ class send_sms_task extends adhoc_task {
             async: false,
         );
         $status = $message?->status;
-        mtrace("SMS send status: " . ($status?->value ?? message_status::UNKNOWN->value));
-        if ($status === message_status::GATEWAY_NOT_AVAILABLE) {
-            mtrace("SMS gateway unavailable - task will retry");
-            throw new \moodle_exception('SMS Gateway is not available');
-        }
+        $retryfailures = [
+            message_status::GATEWAY_FAILED,
+            message_status::GATEWAY_NOT_AVAILABLE,
+        ];
 
+        if (in_array($status, $retryfailures)) {
+            // Only retry if the failure encountered will possibly resolve in subsequent attempts.
+            mtrace("SMS failed status: {$status?->value} - task will retry");
+            throw new \moodle_exception('SMS Gateway encountered a failure');
+        } else {
+            mtrace("SMS send status: " . ($status?->value ?? message_status::UNKNOWN->value));
+        }
     }
 
     /**
