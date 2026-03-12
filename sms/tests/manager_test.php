@@ -578,7 +578,7 @@ final class manager_test extends \advanced_testcase {
         $this->assertCount(1, $adhoctask);
 
         try {
-            $this->expectOutputRegex('/SMS send status: gateway_not_available/');
+            $this->expectOutputRegex('/SMS failed status: gateway_not_available - task will retry/');
             $this->run_all_adhoc_tasks();
             $this->fail('Exception expected');
         } catch (\moodle_exception $e) {
